@@ -1,25 +1,16 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { useDialogStore } from './store/dialogStore';
+import { ModalDialog } from './components/ModalDialog';
+import { MainContainer } from './components/MainContainer';
+
 
 function App() {
+  const isDialogVisible = useDialogStore((state) => state.isDialogVisible);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      {isDialogVisible && ( <ModalDialog /> )}
+      <MainContainer />
+    </>
   );
 }
 
