@@ -1,3 +1,4 @@
+import { useAppUiStore } from '../store/appStore';
 import { styled, alpha } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -51,36 +52,31 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 export function SearchAppBar() {
+  const setDrawerIsOpen = useAppUiStore((state) => state.setDrawerIsOpen);
+
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar sx={{background: 'primary.main'}}>
-        <Toolbar sx={{background: 'primary.main'}}>
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="open drawer"
-            sx={{ mr: 2 }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography
-            variant="h6"
-            noWrap
-            component="div"
-            sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' } }}
-          >
+      <AppBar sx={{ background: 'primary.main' }}>
+        <Toolbar sx={{ background: 'primary.main' }}>
+          <Typography variant='h6' noWrap component='div' sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' } }}>
             ChatGPT API
           </Typography>
           <Search>
             <SearchIconWrapper>
               <SearchIcon />
             </SearchIconWrapper>
-            <StyledInputBase
-              placeholder="Search…"
-              inputProps={{ 'aria-label': 'search' }}
-            />
+            <StyledInputBase placeholder='Search…' inputProps={{ 'aria-label': 'search' }} />
           </Search>
+          <IconButton
+            size='large'
+            edge='end'
+            color='inherit'
+            aria-label='open drawer'
+            sx={{ ml: 0 }}
+            onClick={() => setDrawerIsOpen(true)}
+          >
+            <MenuIcon />
+          </IconButton>
         </Toolbar>
       </AppBar>
     </Box>

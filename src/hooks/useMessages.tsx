@@ -1,16 +1,16 @@
 // src/components/MessageList.tsx
 import { useEffect, useState } from 'react';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
-import { auth, db } from '../firebase';
+import { auth, db } from '../services/firebase';
 
 type Message = {
-  role: 'user' | 'assistant';
+  role: 'system' | 'user' | 'assistant';
   date: Date;
   text: string;
   usage: string;
 };
 
-function MessageList(userId: string, chatRoomTitle: string) {
+export function MessageList(userId: string, chatRoomTitle: string) {
   const [messages, setMessages] = useState<Message[]>([]);
 
   useEffect(() => {
@@ -20,7 +20,7 @@ function MessageList(userId: string, chatRoomTitle: string) {
       const messagesCollection = collection(db, `Users/${userId}/ChatRooms/${chatRoomTitle}/Messages`);
       const messagesQuery = query(messagesCollection, orderBy('date'));
       const messageDocs = await getDocs(messagesQuery);
-      const messages = messageDocs.docs.map(doc => doc.data() as Message);
+      const messages = messageDocs.docs.map((doc) => doc.data() as Message);
       setMessages(messages);
     };
 
@@ -28,6 +28,4 @@ function MessageList(userId: string, chatRoomTitle: string) {
   }, [userId, chatRoomTitle]);
 
   return messages;
-};
-
-export default MessageList;
+}

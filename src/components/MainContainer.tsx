@@ -1,90 +1,62 @@
-import { Typography, Box, Stack, Card, Divider, Button, Avatar } from '@mui/material';
-import ReactMarkdown from 'react-markdown';
-import { CodeBlock } from '../components/CodeBlock';
-import { useDialogStore } from '../store/dialogStore';
-import { SearchAppBar } from '../components/AppBar';
-import { SignInOut } from './SignInOut';
-import { SignOutButton } from './SignOut';
+import { useState, useEffect } from 'react';
+import { Timestamp } from 'firebase/firestore';
+import { useChatStore } from '../store/chatStore';
 import { useUserStore } from '../store/userStore';
+import { Box } from '@mui/material';
+import { SwipeableRoomsDrawer } from '../components/SwipeableRoomsDrawer';
+import { PromptInput } from './PromptInput';
+import { ChatRoomPage } from './ChatRoomPage';
+import { NewChatPage } from './NewChatPage';
+import { createChatRoomAndMessages, Message } from '../services/firestore';
 
-export const MainContainer = () => {
-  const showDialog = useDialogStore((state) => state.showDialog);
-  const userAvatar = useUserStore((state) => state.photoURL);
+export function MainContainer() {
+  const [inputText, setInputText] = useState<string>('');
+  const uid = useUserStore((state) => state.uid);
+  const isNewChat = useChatStore((state) => state.isNewChat);
 
+  const [systemText, setSystemText] = useState<string>('');
+  const [chatTitle, setChatTitle] = useState<string>('');
+  const [roomId, setRoomId] = useState<string>('');
 
-  const handleDialog = async () => {
-    const result = await showDialog('WorldHello WorldHello', 'This is a test dialog', true);
-  }
+  const handlePostButtonClick = async () => {
+    if (isNewChat && inputText.length > 0 && chatTitle.length > 0) {
+      const messages: Message[] = [
+        { role: 'system', date: new Timestamp(0, 0), text: systemText },
+        { role: 'user', date: new Timestamp(0, 0), text: inputText },
+      ];
+      const newRoomId = await createChatRoomAndMessages(uid!, chatTitle, messages);
+      setRoomId(newRoomId);
+      useChatStore.setState({ isNewChat: false });
+      setInputText('');
+    }
+  };
 
-  const testStr = `Material-UIを使用して、ユーザーとアシスタントが交互に表示されるUIを構築するために、以下のコンポーネントと方法を提案します。
-
-  4. メッセージのスタイリングに応じて、*Avatar* コンポーネントを使用してロールを表示することもできます。
-  5. メッセージがユーザーからのものかアシスタントからのものかを判断するために、role プロパティを使用し、スタイリングを調整して表示位置を変更します。
-
-  TypeScriptでの実装例:
-  ${"```tsx"}
-  import { atom } from "jotai";
-
-  // 関数を含むオブジェクトをアトムに登録
-  const functionAtom = atom({
-    func: () => "Hello, World!",
-  });
-  ${"```"}
-  `;
-
-
-const makeMarkedHtml = (html: string) => {
-
-  return (
-    <ReactMarkdown
-    children={html}
-    components={{
-      code: CodeBlock,
-    }}
-  />
-  )
-}
+  useEffect(() => {
+    if (isNewChat) {
+      setSystemText(
+        `あなたはOpenAIによってトレーニングされた大規模言語モデルのChatGPTです。ユーザーの指示をStep by Stepで注意深く思考し、Markdownで回答して下さい。`
+      );
+    }
+  }, [isNewChat]);
 
   return (
-    <>
-      <Box component="nav">
-        <SearchAppBar />
+    <Box>
+      <Box component='nav'>
+        <SwipeableRoomsDrawer />
       </Box>
-      <Box component="main" sx={{ p: 5, backgroundColor: "#eeeeee" }} display="flex" justifyContent="center" alignItems="center">
-        <Stack sx={{ p: 2 }} divider={<Divider orientation="horizontal" flexItem />} spacing={2}>
-          <Card sx={{ p: 6 }}>
-            <Stack direction="row">
-              <Avatar alt="Remy Sharp" src={userAvatar} sx={{ width: 40, height: 40 }} />
-              <Stack sx={{ pl: 2}}>
-                <Box maxWidth={900} marginTop={-2.5}>
-                  {makeMarkedHtml(testStr)}
-                </Box>
-                <Stack direction="row" spacing={2} marginTop={2} sx={{color: 'grey.500'}}>
-                  <Typography  variant="caption" display="block" gutterBottom maxWidth={900}>
-                    {"["}2023/06/15 14:57:39{"]"}
-                  </Typography>
-                  <Typography  variant="caption" display="block" gutterBottom maxWidth={900}>
-                    usage={"{"}"prompt_tokens":956,"completion_tokens":1085,"total_tokens":2041{"}"}
-                  </Typography>
-                </Stack>
-              </Stack>
-            </Stack>
-          </Card>
-          <Card sx={{ p: 6 }}>
-            <Typography variant="body1" gutterBottom display="block" maxWidth={900}>
-              Hello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello World
-              <Button onClick={handleDialog} variant='contained'>Test</Button>
-              <SignInOut></SignInOut>
-            </Typography>
-          </Card>
-          <Card sx={{ p: 6 }}>
-            <Typography variant="body1" gutterBottom maxWidth={900}>
-              Hello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello World
-            </Typography>
-          </Card>
-        </Stack>
+      <Box
+        sx={{ backgroundColor: '#eeeeee', width: '100%', paddingTop: 8 }}
+        display='flex'
+        alignItems='center'
+        justifyContent='center'
+      >
+        {isNewChat ? (
+          <NewChatPage chatTitle={chatTitle} setChatTitle={setChatTitle} systemText={systemText} setSystemText={setSystemText} />
+        ) : (
+          <ChatRoomPage roomId={roomId} />
+        )}
       </Box>
-    </>
+      <PromptInput text={inputText} setText={setInputText} onClick={handlePostButtonClick} />
+    </Box>
   );
-
 }

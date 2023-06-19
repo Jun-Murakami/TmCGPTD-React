@@ -1,6 +1,5 @@
 import { CodeComponent } from 'react-markdown/lib/ast-to-react';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus} from 'react-syntax-highlighter/dist/esm/styles/prism';
+import Highlight from 'react-highlight';
 import { Box } from '@mui/material';
 
 export const CodeBlock: CodeComponent = ({ inline, className, children }) => {
@@ -9,6 +8,7 @@ export const CodeBlock: CodeComponent = ({ inline, className, children }) => {
   }
   const match = /language-(\w+)/.exec(className || '');
   const lang = match && match[1] ? match[1] : '';
+  const borderRadiusClass = lang ? 'border-bottom' : 'border-all';
   return (
     <Box>
       {lang && (
@@ -26,21 +26,10 @@ export const CodeBlock: CodeComponent = ({ inline, className, children }) => {
           {lang}
         </Box>
       )}
-      <SyntaxHighlighter
-        style={vscDarkPlus}
-        language={lang}
-        customStyle={{
-          fontFamily: '"Courier New", "Courier", "Monaco", "Menlo", monospace',
-          borderTopLeftRadius: 0,
-          borderTopRightRadius: 0,
-          borderRadius: lang ? 0 : 10,
-          borderBottomLeftRadius: 10,
-          borderBottomRightRadius: 10,
-          padding: 15,
-          margin: 0,
-        }}
-        children={String(children).replace(/\n$/, '')}
-      />
+      <Highlight className={`${lang} ${borderRadiusClass}`}>
+        {String(children).replace(/\n$/, '')}
+      </Highlight>
     </Box>
   );
 };
+
