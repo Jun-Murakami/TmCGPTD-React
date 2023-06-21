@@ -21,14 +21,7 @@ export function PromptInput({ text, setText, onClick }: TextInputProps) {
   };
 
   return (
-    <Box
-      display='flex'
-      alignItems='center'
-      justifyContent='center'
-      position='fixed'
-      bottom={10}
-      width='100vw'
-    >
+    <Box display='flex' alignItems='center' justifyContent='center' position='fixed' bottom={10} width='100vw'>
       <Box
         bgcolor={'white'}
         sx={{
@@ -43,15 +36,11 @@ export function PromptInput({ text, setText, onClick }: TextInputProps) {
           id='outlined-multiline-flexible'
           label='Send a message'
           variant='filled'
-          maxRows={6}
+          maxRows={8}
           InputProps={{
             endAdornment: (
               <InputAdornment position='end'>
-                <IconButton
-                  sx={{ zIndex: 9999, right: 2, bottom: 10 }}
-                  onClick={onClick}
-                  disabled={!isEditing}
-                >
+                <IconButton sx={{ zIndex: 9999, right: 2, bottom: 10 }} onClick={onClick} disabled={!isEditing}>
                   <SendIcon />
                 </IconButton>
               </InputAdornment>

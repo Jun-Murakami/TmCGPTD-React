@@ -37,7 +37,7 @@ export function NewChatPage({
   };
 
   return (
-    <Stack sx={{ p: 1, width: '100%', paddingBottom: 10 }} spacing={2} maxWidth={900} minWidth={260}>
+    <Stack sx={{ p: 1, width: '100%', paddingBottom: 10 }} spacing={2} maxWidth={900} minWidth={260} zIndex={0}>
       <TextField
         required
         id='outlined-required'
@@ -45,7 +45,7 @@ export function NewChatPage({
         placeholder='New chat'
         value={chatTitle}
         onChange={(e) => setChatTitle(e.target.value)}
-        sx={{ width: '95%', margin: 'auto' }}
+        sx={{ width: '95%', margin: 'auto', zIndex: 0 }}
       />
       <Box sx={{ p: 1.5, alignItems: 'left' }}>
         <Stack direction='row'>
@@ -59,7 +59,9 @@ export function NewChatPage({
               marginTop={0}
             />
           </Stack>
-          <TextFieldMod isSaved={isSaved} isEditing={isSystemEditing} text={systemText} setText={setSystemText} />
+          <Box sx={{ pl: 1.5, width: '100%' }}>
+            <TextFieldMod isSaved={isSaved} isEditing={isSystemEditing} text={systemText} setText={setSystemText} />
+          </Box>
         </Stack>
       </Box>
     </Stack>

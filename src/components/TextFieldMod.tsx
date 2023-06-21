@@ -32,13 +32,13 @@ export function TextFieldMod({ isEditing, text, isSaved, setText }: EditableText
           multiline
           id='standard-multiline'
           variant='standard'
-          sx={{ pl: 1.5, marginTop: -0.5, width: '100%', minHeight: 100 }}
+          sx={{ marginTop: -0.5, width: '100%', minHeight: 100 }}
           value={editableText}
           onChange={handleChange}
           fullWidth
         />
       ) : (
-        <Box lineHeight={1.44} sx={{ pl: 1.5 }} whiteSpace={'pre-wrap'}>
+        <Box lineHeight={1.44} whiteSpace={'pre-wrap'}>
           {text}
         </Box>
       )}

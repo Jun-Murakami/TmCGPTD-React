@@ -16,17 +16,17 @@ function App() {
   const isLoggedIn = useUserStore((state) => state.isLoggedIn);
   const logIn = useUserStore((state) => state.logIn);
   const logOut = useUserStore((state) => state.logOut);
-  const setApiKey = useUserStore(state => state.setApiKey);
+  const setApiKey = useUserStore((state) => state.setApiKey);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(user  => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
         logIn(user.uid, user.displayName || '', user.photoURL || '');
       } else {
         logOut();
       }
     });
-    
+
     return unsubscribe;
   }, [logIn, logOut]);
 
@@ -36,14 +36,12 @@ function App() {
       const decyptedKey = AES.decrypt(openAIKey, process.env.REACT_APP_SECRET_KEY!).toString(Utf8);
       setApiKey(decyptedKey);
     }
-    
-  },[setApiKey]); // 空の依存配列を渡すことで、この副作用はコンポーネントがマウントされた時に一度だけ実行されます
-
+  }, [setApiKey]);
 
   return (
     <>
-      {isDialogVisible && ( <ModalDialog /> )}
-      {isInputDialogVisible && ( <InputDialog /> )}
+      {isDialogVisible && <ModalDialog />}
+      {isInputDialogVisible && <InputDialog />}
       {!isLoggedIn ? <LogInPage /> : <MainContainer />}
     </>
   );

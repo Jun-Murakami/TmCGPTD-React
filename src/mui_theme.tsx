@@ -23,7 +23,7 @@ export const theme = createTheme({
           background-color: #eeeeee;
         },
         .markdownBody{
-          line-height: 1.6em;
+          line-height: 1.44;
           width: 100%;
         },
         .markdownBody pre{

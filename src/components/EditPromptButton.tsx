@@ -15,16 +15,16 @@ export function EditPromptButton({ isEditing, onEdit, onSave, onCancel, marginTo
   return (
     <>
       {!isEditing ? (
-        <IconButton sx={{ position: 'absolute', marginTop: marginTop }} onClick={onEdit}>
-          <EditNoteIcon sx={{ margin: 0, marginLeft: -0.8, marginTop: 2, fontSize: 30 }} />
+        <IconButton onClick={onEdit} sx={{ position: 'absolute', marginTop: marginTop }}>
+          <EditNoteIcon sx={{ margin: 0, marginLeft: -0.8, marginTop: 1, fontSize: 30 }} />
         </IconButton>
       ) : (
         <Stack sx={{ position: 'absolute', marginTop: marginTop }}>
           <IconButton onClick={onSave}>
-            <SaveOutlinedIcon sx={{ margin: 0, marginLeft: -0.8, marginTop: 2, fontSize: 30 }} />
+            <SaveOutlinedIcon sx={{ margin: 0, marginLeft: -0.8, marginTop: 1, fontSize: 30 }} />
           </IconButton>
           <IconButton onClick={onCancel}>
-            <CloseIcon sx={{ margin: 0, marginLeft: -0.8, marginTop: 0, fontSize: 30 }} />
+            <CloseIcon sx={{ margin: 0, marginLeft: -0.8, marginTop: -1, fontSize: 30 }} />
           </IconButton>
         </Stack>
       )}

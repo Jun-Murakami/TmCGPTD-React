@@ -1,4 +1,4 @@
-import { useAppUiStore } from '../store/appStore';
+import { useAppStore } from '../store/appStore';
 import { styled, alpha } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -52,7 +52,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 export function SearchAppBar() {
-  const setDrawerIsOpen = useAppUiStore((state) => state.setDrawerIsOpen);
+  const setDrawerIsOpen = useAppStore((state) => state.setDrawerIsOpen);
 
   return (
     <Box sx={{ flexGrow: 1 }}>
