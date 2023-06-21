@@ -1,40 +1,25 @@
-import React, { Dispatch, SetStateAction } from 'react';
-import { useState, useRef } from 'react';
+import React, { useEffect } from 'react';
+import { useChatStore } from '../store/chatStore';
+import { useSystemMessage } from '../hooks/useSystemMessage';
 import { Box, Stack, TextField } from '@mui/material';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import { TextFieldMod } from '../components/TextFieldMod';
 import { EditPromptButton } from '../components/EditPromptButton';
 
-export function NewChatPage({
-  chatTitle,
-  setChatTitle,
-  systemText,
-  setSystemText,
-}: {
-  chatTitle: string;
-  setChatTitle: Dispatch<SetStateAction<string>>;
-  systemText: string;
-  setSystemText: Dispatch<SetStateAction<string>>;
-}) {
-  const currentSystemTextRef = useRef('');
+export function NewChatPage() {
+  const { systemMessageState, handleSystemEdit, handleSystemSaved, handleSystemCancel } = useSystemMessage();
 
-  const [isSystemEditing, setIsSystemEditing] = useState<boolean>(false);
-  const [isSaved, setIsSaved] = useState<boolean>(false);
+  const roomName = useChatStore((state) => state.roomState.currentRoomName!);
+  const systemMessage = useChatStore((state) => state.roomState.systemMessage!);
+  const setRoomState = useChatStore((state) => state.setRoomState);
 
-  const handleSystemEdit = () => {
-    currentSystemTextRef.current = systemText;
-    setIsSystemEditing(true);
-  };
-
-  const handleSystemSaved = () => {
-    setIsSaved(true);
-    setIsSystemEditing(false);
-  };
-
-  const handleSystemCancel = () => {
-    setSystemText(currentSystemTextRef.current);
-    setIsSystemEditing(false);
-  };
+  useEffect(() => {
+    setRoomState((prev) => ({
+      ...prev,
+      systemMessage: `あなたはOpenAIによってトレーニングされた大規模言語モデルのChatGPTです。ユーザーの指示をStep by Stepで注意深く思考し、Markdownで回答して下さい。`,
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <Stack sx={{ p: 1, width: '100%', paddingBottom: 10 }} spacing={2} maxWidth={900} minWidth={260} zIndex={0}>
@@ -43,8 +28,8 @@ export function NewChatPage({
         id='outlined-required'
         label='Chat title (Required)'
         placeholder='New chat'
-        value={chatTitle}
-        onChange={(e) => setChatTitle(e.target.value)}
+        value={roomName}
+        onChange={(e) => setRoomState((prev) => ({ ...prev, currentRoomName: e.target.value }))}
         sx={{ width: '95%', margin: 'auto', zIndex: 0 }}
       />
       <Box sx={{ p: 1.5, alignItems: 'left' }}>
@@ -52,7 +37,7 @@ export function NewChatPage({
           <Stack spacing={2}>
             <PsychologyIcon sx={{ fontSize: 30, marginTop: 0 }} color='primary' />
             <EditPromptButton
-              isEditing={isSystemEditing}
+              isEditing={systemMessageState.isTextEditing}
               onEdit={handleSystemEdit}
               onSave={handleSystemSaved}
               onCancel={handleSystemCancel}
@@ -60,7 +45,12 @@ export function NewChatPage({
             />
           </Stack>
           <Box sx={{ pl: 1.5, width: '100%' }}>
-            <TextFieldMod isSaved={isSaved} isEditing={isSystemEditing} text={systemText} setText={setSystemText} />
+            <TextFieldMod
+              isSaved={systemMessageState.isTextSaved}
+              isEditing={systemMessageState.isTextEditing}
+              text={systemMessage}
+              setText={(newText) => setRoomState((prev) => ({ ...prev, systemMessage: newText }))}
+            />
           </Box>
         </Stack>
       </Box>

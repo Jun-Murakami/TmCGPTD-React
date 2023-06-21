@@ -1,13 +1,15 @@
 // src/ChatRoom.tsx
-import { useEffect, useState, useRef } from 'react';
+import { useEffect } from 'react';
 import { createChat } from 'completions';
 import { encode } from 'gpt-tokenizer';
 import { Timestamp } from 'firebase/firestore';
 import { Box, Card, Divider, Stack, Avatar, Typography } from '@mui/material';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import ReactMarkdown from 'react-markdown';
-import { getMessagesDb, updateMessageDb, updateAssistantMessageDb } from '../services/firestore';
-import { Message } from '../types/Message';
+import { getMessagesDb, updateAssistantMessageDb } from '../services/firestore';
+import { Message } from '../types/types';
+import { useSystemMessage } from '../hooks/useSystemMessage';
+import { useUserMessage } from '../hooks/useUserMessage';
 import { useUserStore } from '../store/userStore';
 import { useChatStore } from '../store/chatStore';
 import { useAppStore } from '../store/appStore';
@@ -18,106 +20,25 @@ import { EditPromptButton } from '../components/EditPromptButton';
 import { TextFieldMod } from '../components/TextFieldMod';
 
 export function ChatRoomPage() {
+  const roomState = useChatStore((state) => state.roomState);
+  const setRoomState = useChatStore((state) => state.setRoomState);
   const currentMessages = useChatStore<Message[]>((state) => state.currentMessages);
-  const currentRoomId = useChatStore<string | undefined>((state) => state.currentRoomId);
+  const setCurrentMessages = useChatStore((state) => state.setCurrentMessages);
   const userAvatar = useUserStore<string | undefined>((state) => state.photoURL);
   const uid = useUserStore<string | null>((state) => state.uid);
-  const setCurrentMessages = useChatStore((state) => state.setCurrentMessages);
   const showDialog = useDialogStore((state) => state.showDialog);
 
-  //システムメッセージの監視と更新-----------------------------------------------
-  const [systemTextId, setSystemTextId] = useState<string>('');
-  const [systemText, setSystemText] = useState<string>('');
-  const [isSystemEditing, setIsSystemEditing] = useState<boolean>(false);
-  const [isSystemSaved, setIsSystemSaved] = useState<boolean>(false);
-  const currentSystemTextRef = useRef('');
-
-  const handleSystemEdit = () => {
-    currentSystemTextRef.current = systemText;
-    setIsSystemEditing(true);
-    setIsSystemSaved(false);
-  };
-
-  const handleSystemSaved = () => {
-    setIsSystemSaved(true);
-    setIsSystemEditing(false);
-  };
-
-  const handleSystemCancel = () => {
-    setSystemText(currentSystemTextRef.current);
-    setIsSystemEditing(false);
-  };
-
-  useEffect(() => {
-    if (systemText === '') return;
-    const newMessages = currentMessages.map((message) => {
-      if (message.id === systemTextId) {
-        const newMessage = { ...message, text: systemText };
-        // Update the message in Firestore
-        updateMessageDb(uid!, currentRoomId!, newMessage);
-        return newMessage;
-      } else {
-        return message;
-      }
-    });
-    setCurrentMessages(newMessages);
-    console.log('systemText updated' + newMessages);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [systemText]);
-
-  //ユーザーメッセージの監視と更新-----------------------------------------------
-  const [userLastId, setUserLastId] = useState<string>('');
-  const [userText, setUserText] = useState<string>('');
-  const [isUserEditing, setIsUserEditing] = useState<boolean>(false);
-  const [isUserSaved, setIsUserSaved] = useState<boolean>(false);
-  const currentUserTextRef = useRef('');
-
-  const handleUserEdit = () => {
-    currentUserTextRef.current = userText;
-    setIsUserEditing(true);
-    setIsUserSaved(false);
-  };
-
-  const handleUserSaved = () => {
-    setIsUserSaved(true);
-    setIsUserEditing(false);
-  };
-
-  const handleUserCancel = () => {
-    setUserText(currentUserTextRef.current);
-    setIsUserEditing(false);
-  };
-
-  useEffect(() => {
-    if (userText === '') return;
-    const newMessages = currentMessages.map((message) => {
-      if (message.id === userLastId) {
-        const newMessage = { ...message, text: userText };
-        // Update the message in Firestore
-        updateMessageDb(uid!, currentRoomId!, newMessage);
-        return newMessage;
-      } else {
-        return message;
-      }
-    });
-    setCurrentMessages(newMessages);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userText]);
+  const { systemMessageState, handleSystemEdit, handleSystemSaved, handleSystemCancel } = useSystemMessage();
+  const { userMessageState, handleUserEdit, handleUserSaved, handleUserCancel } = useUserMessage();
 
   //アシスタントメッセージの監視と更新-----------------------------------------------
-  const [assistantLastId, setAssistantLastId] = useState<string>('');
-  const userInput = useChatStore<string>((state) => state.userInput);
-  const setUserInput = useChatStore((state) => state.setUserInput);
   const apiKey = useUserStore<string | null>((state) => state.apiKey);
   const model = useAppStore<string | null>((state) => state.apiModel);
-  const isNewInputAdded = useChatStore<boolean>((state) => state.isNewInputAdded);
-  const setIsNewInputAdded = useChatStore((state) => state.setIsNewInputAdded);
 
   useEffect(() => {
-    if (!isNewInputAdded) return;
+    if (!roomState.isNewInputAdded || !apiKey || !model || roomState.userInput === '') return;
 
     const getAssistantMessage = async () => {
-      if (!apiKey || !model || !userInput) return;
       const chat = createChat({
         apiKey: apiKey,
         model: model,
@@ -138,7 +59,7 @@ export function ChatRoomPage() {
       let updatedMessage: Message | null = null; // 更新されたメッセージを保持する変数
 
       try {
-        await chat.sendMessage(userInput, (message) => {
+        await chat.sendMessage(roomState.userInput, (message) => {
           if (message.message?.choices === undefined) return;
           if (message.message?.choices[0].delta === undefined) return;
 
@@ -147,7 +68,7 @@ export function ChatRoomPage() {
             const content = delta.content;
             setCurrentMessages((currentMessages) => {
               const newMessages = currentMessages.map((message: Message) => {
-                if (message.id === assistantLastId) {
+                if (message.id === roomState.lastAssistantMessageId) {
                   const newAssistantText = message.text + content;
                   const comletionTokens = encode(newAssistantText).length;
                   const newMessage = {
@@ -185,56 +106,70 @@ export function ChatRoomPage() {
 
       // sendMessageが完了した後にデータベースを更新
       if (updatedMessage) {
-        await updateAssistantMessageDb(uid!, currentRoomId!, updatedMessage);
+        await updateAssistantMessageDb(uid!, roomState.currentRoomId!, updatedMessage);
       }
     };
     getAssistantMessage();
 
-    setIsNewInputAdded(false);
-    setUserInput('');
-  }, [isNewInputAdded]);
+    setRoomState((prevState) => ({
+      ...prevState,
+      isNewInputAdded: false,
+      userInput: '',
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roomState.isNewInputAdded]);
 
   //currentRoomIdが変更されたら、currentMessagesを更新-----------------------------------------------
   useEffect(() => {
-    if (!uid || !currentRoomId) return;
+    if (!uid || !roomState.currentRoomId) return;
     const getMessageAsync = async () => {
-      await getMessagesDb(uid, currentRoomId).then(setCurrentMessages);
+      await getMessagesDb(uid, roomState.currentRoomId!).then(setCurrentMessages);
+      if (roomState.userInput !== '') {
+        setRoomState((prevState) => ({
+          ...prevState,
+          isNewInputAdded: true,
+        }));
+      }
     };
     getMessageAsync();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentRoomId]);
+  }, [roomState.currentRoomId]);
 
-  //currentMessagesコレクションが変更されたら、systemTextId, userLastId, assistantLastIdを更新-----------------------------------------------
+  //currentMessagesが変更されたら、systemMessageId、userLastId、assistantLastIdを更新-----------------------------------------------
   useEffect(() => {
-    const getMessageIds = async () => {
-      const systemTextId = currentMessages.find((message) => message.role === 'system')?.id;
-      setSystemTextId(systemTextId!);
+    //システムメッセージの更新
+    setRoomState((prevState) => ({
+      ...prevState,
+      systemMessageId: currentMessages.find((message) => message.role === 'system')?.id,
+      systemMessage: currentMessages.find((message) => message.role === 'system')?.text,
+    }));
 
-      let lastUserId: string | undefined = '';
-      for (let i = currentMessages.length - 1; i >= 0; i--) {
-        if (currentMessages[i].role === 'user') {
-          lastUserId = currentMessages[i].id;
-          break;
-        }
+    //ユーザーメッセージの更新
+    for (let i = currentMessages.length - 1; i >= 0; i--) {
+      if (currentMessages[i].role === 'user') {
+        setRoomState((prevState) => ({
+          ...prevState,
+          lastUserMessageId: currentMessages[i].id,
+          lastUserMessage: currentMessages[i].text,
+        }));
+        break;
       }
-      setUserLastId(lastUserId!);
+    }
 
-      let lastAssistantId: string | undefined = '';
-      for (let i = currentMessages.length - 1; i >= 0; i--) {
-        if (currentMessages[i].role === 'assistant') {
-          lastAssistantId = currentMessages[i].id;
-          break;
-        }
+    //アシスタントメッセージの更新
+    for (let i = currentMessages.length - 1; i >= 0; i--) {
+      if (currentMessages[i].role === 'assistant') {
+        setRoomState((prevState) => ({
+          ...prevState,
+          lastAssistantMessageId: currentMessages[i].id,
+        }));
+        break;
       }
-      setAssistantLastId(lastAssistantId!);
+    }
 
-      if (userInput !== '') {
-        setIsNewInputAdded(true);
-      }
-    };
-    getMessageIds();
-  }, [currentMessages.length]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentMessages]);
 
   //マークダウン変換--------------------------------------------------------------
   const makeMarkedHtml = (html: string) => {
@@ -259,13 +194,13 @@ export function ChatRoomPage() {
     >
       {currentMessages.map((message) => (
         <div key={message.id}>
-          {message.id === systemTextId ? (
+          {message.id === roomState.systemMessageId ? (
             <Box sx={{ p: 1.5, alignItems: 'left' }}>
               <Stack direction='row'>
                 <Stack spacing={2}>
                   <PsychologyIcon sx={{ fontSize: 30, marginTop: 0 }} color='primary' />
                   <EditPromptButton
-                    isEditing={isSystemEditing}
+                    isEditing={systemMessageState.isTextEditing}
                     onEdit={handleSystemEdit}
                     onSave={handleSystemSaved}
                     onCancel={handleSystemCancel}
@@ -273,19 +208,25 @@ export function ChatRoomPage() {
                   />
                 </Stack>
                 <Box sx={{ pl: 1.5, width: '100%' }}>
-                  <TextFieldMod isSaved={isSystemSaved} isEditing={isSystemEditing} text={message.text} setText={setSystemText} />
+                  <TextFieldMod
+                    isSaved={systemMessageState.isTextSaved}
+                    isEditing={systemMessageState.isTextEditing}
+                    text={roomState.systemMessage!}
+                    id={message.id}
+                    setText={(newText) => setRoomState((prev) => ({ ...prev, systemMessage: newText }))}
+                  />
                 </Box>
               </Stack>
             </Box>
           ) : (
-            <Card sx={message.role === 'assistant' ? { backgroundColor: 'grey.100', p: 1.5 } : { p: 1.5 }}>
+            <Card sx={message.role === 'assistant' ? { backgroundColor: 'grey.50', p: 1.5 } : { p: 1.5 }}>
               <Stack direction='row'>
                 {message.role === 'user' ? (
                   <>
                     <Avatar alt='Avatar' src={userAvatar} sx={{ width: 30, height: 30 }} />
-                    {message.id === userLastId && (
+                    {message.id === roomState.lastUserMessageId && (
                       <EditPromptButton
-                        isEditing={isUserEditing}
+                        isEditing={userMessageState.isTextEditing}
                         onEdit={handleUserEdit}
                         onSave={handleUserSaved}
                         onCancel={handleUserCancel}
@@ -299,7 +240,18 @@ export function ChatRoomPage() {
                 <Stack sx={{ pl: 1.5 }} marginTop={-1.5} width={'100%'}>
                   {message.role === 'user' ? (
                     <Box marginTop={1.5} sx={{ width: '100%' }}>
-                      <TextFieldMod isSaved={isUserSaved} isEditing={isUserEditing} text={message.text} setText={setUserText} />
+                      <TextFieldMod
+                        isSaved={userMessageState.isTextSaved}
+                        isEditing={userMessageState.isTextEditing}
+                        text={message.id === roomState.lastUserMessageId ? roomState.lastUserMessage! : message.text!}
+                        id={message.id!}
+                        setText={(newText) =>
+                          setRoomState((prevState) => ({
+                            ...prevState,
+                            lastUserMessage: newText,
+                          }))
+                        }
+                      />
                     </Box>
                   ) : (
                     makeMarkedHtml(message.text)

@@ -1,59 +1,48 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useAppStore } from '../store/appStore';
 import { useChatStore } from '../store/chatStore';
+import { useUserStore } from '../store/userStore';
 import { signOut } from 'firebase/auth';
 import { auth } from '../services/firebase';
-import { getChatRoomsDb } from '../services/firestore';
-import { useDialogStore } from '../store/dialogStore';
-import { useInputDialogStore } from '../store/dialogStore';
-import { useUserStore } from '../store/userStore';
-import { FormControl, InputLabel, Select, MenuItem } from '@mui/material';
-import Box from '@mui/material/Box';
+import { useDialogStore, useInputDialogStore } from '../store/dialogStore';
+import {
+  Box,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  SwipeableDrawer,
+  IconButton,
+  List,
+  Divider,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+} from '@mui/material';
 import { styled } from '@mui/material/styles';
-import SwipeableDrawer from '@mui/material/SwipeableDrawer';
-import IconButton from '@mui/material/IconButton';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import List from '@mui/material/List';
-import Divider from '@mui/material/Divider';
-import ListItem from '@mui/material/ListItem';
 import { ListItemGradient } from './ListItemGradient';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import KeyIcon from '@mui/icons-material/Key';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { SearchAppBar } from './AppBar';
 import AES from 'crypto-js/aes';
 
 export function SwipeableRoomsDrawer() {
+  const roomState = useChatStore((state) => state.roomState);
+  const setRoomState = useChatStore((state) => state.setRoomState);
   const setDrawerIsOpen = useAppStore((state) => state.setDrawerIsOpen);
-  const uid = useUserStore((state) => state.uid);
-  const isNewChat = useChatStore((state) => state.isNewChat);
-  const setIsNewChat = useChatStore((state) => state.setIsNewChat);
   const drawerIsOpen = useAppStore((state) => state.drawerIsOpen);
   const apiModel = useAppStore((state) => state.apiModel);
-  const setChatRooms = useChatStore((state) => state.setChatRooms);
-  const chatRooms = useChatStore((state) => state.chatRooms);
-  const currentMessages = useChatStore((state) => state.currentMessages);
-  const currentRoomId = useChatStore((state) => state.currentRoomId);
-  const setCurrentRoomId = useChatStore((state) => state.setCurrentRoomId);
   const setApiModel = useAppStore((state) => state.setApiModel);
   const showDialog = useDialogStore((state) => state.showDialog);
   const showInputDialog = useInputDialogStore((state) => state.showDialog);
   const setApiKey = useUserStore((state) => state.setApiKey);
 
   const handleChatRoomClick = (RoomId: string) => (event: React.MouseEvent) => {
-    if (isNewChat) setIsNewChat(false);
-    setCurrentRoomId(RoomId);
+    if (roomState.isNewChat) setRoomState((prev) => ({ ...prev, isNewChat: false }));
+    setRoomState((prev) => ({ ...prev, currentRoomId: RoomId }));
   };
-
-  useEffect(() => {
-    const getChatRooms = async () => {
-      getChatRoomsDb(uid!).then(setChatRooms);
-    };
-    getChatRooms();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentMessages.length]);
 
   const handleSignOut = async () => {
     try {
@@ -115,6 +104,8 @@ export function SwipeableRoomsDrawer() {
         >
           <MenuItem value='gpt-3.5-turbo'>gpt-3.5-turbo</MenuItem>
           <MenuItem value='gpt-4'>gpt-4</MenuItem>
+          <MenuItem value='gpt-3.5-turbo-0613'>gpt-3.5-turbo-0613</MenuItem>
+          <MenuItem value='gpt-4-0613'>gpt-4-0613</MenuItem>
           <MenuItem value='gpt-3.5-turbo-16k'>gpt-3.5-turbo-16k</MenuItem>
           <MenuItem value='gpt-4-32k'>gpt-4-32k</MenuItem>
         </Select>
@@ -139,8 +130,13 @@ export function SwipeableRoomsDrawer() {
       </List>
       <Divider />
       <List>
-        {chatRooms.map((room) => (
-          <ListItemGradient key={room.id} currentRoomId={currentRoomId!} room={room} handleChatRoomClick={handleChatRoomClick} />
+        {roomState.chatRooms.map((room) => (
+          <ListItemGradient
+            key={room.id}
+            currentRoomId={roomState.currentRoomId!}
+            room={room}
+            handleChatRoomClick={handleChatRoomClick}
+          />
         ))}
       </List>
     </Box>

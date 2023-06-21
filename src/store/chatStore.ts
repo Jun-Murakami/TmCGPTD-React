@@ -1,34 +1,55 @@
 import { create } from 'zustand';
 import { produce } from 'immer';
 import { getMessagesDb } from '../services/firestore';
-import { Message } from '../types/Message';
-import { ChatRoom } from '../types/ChatRoom';
+import { Message, ChatRoom } from '../types/types';
 
-type ChatStore = {
+type RoomState = {
   isNewChat: boolean;
-  currentMessages: Message[];
   chatRooms: ChatRoom[];
   currentRoomId?: string;
+  currentRoomName?: string;
+  systemMessage?: string;
+  systemMessageId?: string;
+  lastUserMessage?: string;
+  lastUserMessageId?: string;
+  lastAssistantMessage?: string;
+  lastAssistantMessageId?: string;
   userInput: string;
   isNewInputAdded: boolean;
-  setIsNewChat: (isNewChat: boolean) => void;
+};
+
+export type ChatStore = {
+  roomState: RoomState;
+  currentMessages: Message[];
+  setRoomState: (newState: Partial<RoomState> | ((prevState: RoomState) => RoomState)) => void;
   setCurrentMessages: (messages: Message[] | ((prevMessages: Message[]) => Message[])) => void;
-  setChatRooms: (chatRooms: ChatRoom[]) => void;
-  setCurrentRoomId: (roomId: string) => void;
-  setUserInput: (userInput: string) => void;
-  setIsNewInputAdded: (isNewInputAdded: boolean) => void;
   getMessages: (userId: string, roomId: string) => Promise<void>;
 };
 
 export const useChatStore = create<ChatStore>((set) => ({
+  roomState: {
+    isNewChat: true,
+    chatRooms: [],
+    currentRoomId: '',
+    currentRoomName: '',
+    systemMessage: '',
+    systemMessageId: '',
+    lastUserMessage: '',
+    lastUserMessageId: '',
+    lastAssistantMessage: '',
+    lastAssistantMessageId: '',
+    userInput: '',
+    isNewInputAdded: false,
+  },
   currentMessages: [],
-  isNewChat: true,
-  chatRooms: [],
-  currentRoomId: undefined,
-  userInput: '',
-  isNewInputAdded: false,
-  setIsNewChat: (isNewChat) => set({ isNewChat }),
-  setCurrentRoomId: (roomId) => set({ currentRoomId: roomId }),
+  setRoomState: (newState) =>
+    set((state) => produce(state, (draftState) => {
+      if (typeof newState === 'function') {
+        draftState.roomState = newState(draftState.roomState);
+      } else {
+        draftState.roomState = { ...draftState.roomState, ...newState };
+      }
+    })),
   setCurrentMessages: (messages) =>
     set((state) => produce(state, (draftState) => {
       if (typeof messages === 'function') {
@@ -37,16 +58,10 @@ export const useChatStore = create<ChatStore>((set) => ({
         draftState.currentMessages = messages;
       }
     })),
-  setChatRooms: (chatRooms) =>
-    set((state) => produce(state, (draftState) => {
-      draftState.chatRooms = chatRooms;
-    })),
   getMessages: async (userId, roomId) => {
     const messages = await getMessagesDb(userId, roomId);
     set((state) => produce(state, (draftState) => {
       draftState.currentMessages = messages;
     }));
   },
-  setUserInput: (userInput) => set({ userInput }),
-  setIsNewInputAdded: (isNewInputAdded) => set({ isNewInputAdded }),
 }));

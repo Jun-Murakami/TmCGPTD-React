@@ -5,7 +5,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ChatBubbleOutlineOutlinedIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
 import RateReviewOutlinedIcon from '@mui/icons-material/RateReviewOutlined';
-import { ChatRoom } from '../types/ChatRoom';
+import { ChatRoom } from '../types/types';
 
 type HandleChatRoomClick = (RoomId: string) => (event: React.MouseEvent) => void;
 
