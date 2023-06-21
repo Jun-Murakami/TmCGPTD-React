@@ -27,9 +27,9 @@ export function MainContainer() {
   const handlePostButtonClick = async () => {
     if (isNewChat && inputText.length > 0 && chatTitle.length > 0) {
       const messages: Message[] = [
-        { role: 'system', date: new Timestamp(0, 0), text: systemText },
-        { role: 'user', date: new Timestamp(0, 0), text: inputText },
-        { role: 'assistant', date: new Timestamp(0, 0), text: '' },
+        { role: 'system', date: Timestamp.now(), text: systemText },
+        { role: 'user', date: Timestamp.now(), text: inputText },
+        { role: 'assistant', date: Timestamp.now(), text: '' },
       ];
       const newRoomId = await createChatRoomAndMessagesDb(uid!, chatTitle, messages);
       setCurrentRoomId(newRoomId);
