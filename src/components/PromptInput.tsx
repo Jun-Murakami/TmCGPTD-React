@@ -1,21 +1,23 @@
+import React from 'react';
 import { useState } from 'react';
+import { useAppStore } from '../store/appStore';
 import { Box, IconButton, InputAdornment, TextField } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 
 interface TextInputProps {
-  text: string;
-  setText: React.Dispatch<React.SetStateAction<string>>;
   onClick: () => void;
 }
 
-export function PromptInput({ text, setText, onClick }: TextInputProps) {
+export const PromptInput = React.memo(({ onClick }: TextInputProps) => {
   const [isEditing, setIsEditing] = useState(false);
+  const inputText = useAppStore((state) => state.inputText);
+  const setInputText = useAppStore((state) => state.setInputText);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setText(event.target.value);
-    if (event.target.value.length > 0) {
+    setInputText(event.target.value);
+    if (event.target.value.length > 0 && !isEditing) {
       setIsEditing(true);
-    } else {
+    } else if (event.target.value.length === 0 && isEditing) {
       setIsEditing(false);
     }
   };
@@ -30,7 +32,7 @@ export function PromptInput({ text, setText, onClick }: TextInputProps) {
         }}
       >
         <TextField
-          value={text}
+          value={inputText}
           onChange={handleChange}
           multiline
           id='outlined-multiline-flexible'
@@ -58,4 +60,4 @@ export function PromptInput({ text, setText, onClick }: TextInputProps) {
       </Box>
     </Box>
   );
-}
+});

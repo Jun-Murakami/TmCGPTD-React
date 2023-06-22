@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { auth } from './services/firebase';
 import { useUserStore } from './store/userStore';
+import { Helmet } from 'react-helmet';
 import { LogInPage } from './components/LogInPage';
 import { useDialogStore } from './store/dialogStore';
 import { useInputDialogStore } from './store/dialogStore';
@@ -17,6 +18,12 @@ function App() {
   const logIn = useUserStore((state) => state.logIn);
   const logOut = useUserStore((state) => state.logOut);
   const setApiKey = useUserStore((state) => state.setApiKey);
+  const [language, setLanguage] = useState('en');
+
+  useEffect(() => {
+    const browserLanguage = navigator.language.split('-')[0];
+    setLanguage(browserLanguage);
+  }, []);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -26,7 +33,6 @@ function App() {
         logOut();
       }
     });
-
     return unsubscribe;
   }, [logIn, logOut]);
 
@@ -40,6 +46,9 @@ function App() {
 
   return (
     <>
+      <Helmet>
+        <html lang={language} />
+      </Helmet>
       {isDialogVisible && <ModalDialog />}
       {isInputDialogVisible && <InputDialog />}
       {!isLoggedIn ? <LogInPage /> : <MainContainer />}

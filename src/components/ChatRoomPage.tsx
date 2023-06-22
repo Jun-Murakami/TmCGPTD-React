@@ -169,7 +169,7 @@ export function ChatRoomPage() {
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentMessages]);
+  }, [currentMessages.length]);
 
   //マークダウン変換--------------------------------------------------------------
   const makeMarkedHtml = (html: string) => {
@@ -219,7 +219,7 @@ export function ChatRoomPage() {
               </Stack>
             </Box>
           ) : (
-            <Card sx={message.role === 'assistant' ? { backgroundColor: 'grey.50', p: 1.5 } : { p: 1.5 }}>
+            <Card sx={{ p: 1.5 }}>
               <Stack direction='row'>
                 {message.role === 'user' ? (
                   <>

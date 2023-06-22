@@ -23,6 +23,7 @@ import {
 import { styled } from '@mui/material/styles';
 import { ListItemGradient } from './ListItemGradient';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import ReviewsOutlinedIcon from '@mui/icons-material/ReviewsOutlined';
 import KeyIcon from '@mui/icons-material/Key';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { SearchAppBar } from './AppBar';
@@ -38,6 +39,9 @@ export function SwipeableRoomsDrawer() {
   const showDialog = useDialogStore((state) => state.showDialog);
   const showInputDialog = useInputDialogStore((state) => state.showDialog);
   const setApiKey = useUserStore((state) => state.setApiKey);
+  const setInputText = useAppStore((state) => state.setInputText);
+
+  const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   const handleChatRoomClick = (RoomId: string) => (event: React.MouseEvent) => {
     if (roomState.isNewChat) setRoomState((prev) => ({ ...prev, isNewChat: false }));
@@ -66,6 +70,13 @@ export function SwipeableRoomsDrawer() {
       localStorage.setItem('encryptedKey', encryptedKey);
     } catch (error) {
       await showDialog('Error input key: ' + error, 'Error');
+    }
+  };
+
+  const handleNewChat = async () => {
+    if (!roomState.isNewChat) {
+      setRoomState((prev) => ({ ...prev, isNewChat: true, currentRoomId: '', currentRoomName: '', userInput: '' }));
+      setInputText('');
     }
   };
 
@@ -116,7 +127,10 @@ export function SwipeableRoomsDrawer() {
             <ListItemIcon>
               <KeyIcon />
             </ListItemIcon>
-            <ListItemText primary='API key' />
+            <ListItemText
+              primary='API key'
+              primaryTypographyProps={{ component: 'div', sx: { left: -17, overflow: 'hidden', position: 'relative' } }}
+            />
           </ListItemButton>
         </ListItem>
         <ListItem disablePadding>
@@ -124,7 +138,24 @@ export function SwipeableRoomsDrawer() {
             <ListItemIcon>
               <LogoutIcon />
             </ListItemIcon>
-            <ListItemText primary='Sign out' />
+            <ListItemText
+              primary='Sign out'
+              primaryTypographyProps={{ component: 'div', sx: { left: -17, overflow: 'hidden', position: 'relative' } }}
+            />
+          </ListItemButton>
+        </ListItem>
+      </List>
+      <Divider />
+      <List>
+        <ListItem disablePadding>
+          <ListItemButton onClick={handleNewChat}>
+            <ListItemIcon>
+              <ReviewsOutlinedIcon />
+            </ListItemIcon>
+            <ListItemText
+              primary='New chat'
+              primaryTypographyProps={{ component: 'div', sx: { left: -17, overflow: 'hidden', position: 'relative' } }}
+            />
           </ListItemButton>
         </ListItem>
       </List>
@@ -153,6 +184,9 @@ export function SwipeableRoomsDrawer() {
         open={drawerIsOpen}
         onClose={toggleDrawer(false)}
         onOpen={toggleDrawer(true)}
+        disableBackdropTransition={!iOS}
+        disableDiscovery={iOS}
+        sx={{ zIndex: 9999 }}
       >
         <DrawerHeader>
           <IconButton onClick={toggleDrawer(false)}>

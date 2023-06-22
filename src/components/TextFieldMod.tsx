@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Timestamp } from 'firebase/firestore';
-import { TextField, Box } from '@mui/material';
+import { TextField, Typography } from '@mui/material';
 import { Message } from '../types/types';
 import { useChatStore } from '../store/chatStore';
 import { useUserStore } from '../store/userStore';
 import { updateMessageDb } from '../services/firestore';
+import { useWrapUrlsInSpan } from '../hooks/useWrapUrlsInSpan';
 
 export interface EditableTextAreaProps {
   isEditing: boolean;
@@ -26,6 +27,8 @@ export function TextFieldMod({ isEditing, text, isSaved, id = '', setText }: Edi
   };
 
   const [editableText, setEditableText] = useState<string>('');
+
+  const processedText = useWrapUrlsInSpan(text);
 
   useEffect(() => {
     if (isEditing) {
@@ -87,9 +90,15 @@ export function TextFieldMod({ isEditing, text, isSaved, id = '', setText }: Edi
           fullWidth
         />
       ) : (
-        <Box lineHeight={1.44} whiteSpace={'pre-wrap'}>
-          {text}
-        </Box>
+        <Typography
+          lineHeight={1.44}
+          sx={{
+            width: '100%',
+            whiteSpace: 'pre-wrap',
+          }}
+        >
+          {processedText}
+        </Typography>
       )}
     </>
   );

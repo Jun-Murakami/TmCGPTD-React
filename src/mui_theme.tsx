@@ -38,6 +38,16 @@ export const theme = createTheme({
           overflow: auto;
           -webkit-overflow-scrolling: touch;
         },
+        .markdownBody ul{
+          margin-block-start: 0.2em;
+          margin-block-end: 0.2em;
+          padding-inline-start: 1em;
+        },
+        .markdownBody ol{
+          margin-block-start: 0;
+          margin-block-end: 0;
+          padding-inline-start: 1em;
+        },
         .border-all {
           margin : 15px 0 15px 0;
           border-radius: 10px;

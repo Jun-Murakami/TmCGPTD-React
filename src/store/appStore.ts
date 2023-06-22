@@ -4,19 +4,19 @@ import { create } from 'zustand';
 
 export type AppState = {
   drawerIsOpen: boolean;
-  isNewChat: boolean;
+  inputText: string;
   apiModel: string;
   setDrawerIsOpen: (drawerIsOpen: boolean) => void;
-  setIsNewChat: (isNewChat: boolean) => void;
+  setInputText: (inputText: string) => void;
   setApiModel: (apiModel: string) => void;
 }
 
 export const useAppStore = create<AppState>()((set) => ({
   drawerIsOpen: false,
-  isNewChat: true,
+  inputText: '',
   apiModel: 'gpt-3.5-turbo',
   setDrawerIsOpen: (drawerIsOpen) => set({ drawerIsOpen }),
-  setIsNewChat: (isNewChat) => set({ isNewChat }),
+  setInputText: (inputText) => set({ inputText }),
   setApiModel: (apiModel) => set({ apiModel }),
 }));
 

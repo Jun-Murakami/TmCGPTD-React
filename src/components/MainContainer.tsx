@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Timestamp } from 'firebase/firestore';
 import { useChatStore } from '../store/chatStore';
 import { useUserStore } from '../store/userStore';
+import { useAppStore } from '../store/appStore';
 import { useDialogStore } from '../store/dialogStore';
 import { Box } from '@mui/material';
 import { SwipeableRoomsDrawer } from '../components/SwipeableRoomsDrawer';
@@ -17,6 +18,11 @@ export function MainContainer() {
   const roomState = useChatStore((state) => state.roomState);
   const setRoomState = useChatStore((state) => state.setRoomState);
   const setCurrentMessages = useChatStore((state) => state.setCurrentMessages);
+  const inputText = useAppStore((state) => state.inputText);
+  const setInputText = useAppStore((state) => state.setInputText);
+
+  const uid = useUserStore((state) => state.uid);
+  const apiKey = useUserStore((state) => state.apiKey);
 
   useEffect(() => {
     const getChatRoomsAync = async () => {
@@ -26,11 +32,6 @@ export function MainContainer() {
     getChatRoomsAync();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const [inputText, setInputText] = useState<string>('');
-
-  const uid = useUserStore((state) => state.uid);
-  const apiKey = useUserStore((state) => state.apiKey);
 
   const handlePostButtonClick = async () => {
     if (roomState.isNewChat && inputText.length > 0 && roomState.currentRoomName!.length > 0) {
@@ -71,7 +72,7 @@ export function MainContainer() {
       <Box sx={{ width: '100%', paddingTop: 8 }} display='flex' alignItems='center' justifyContent='center' zIndex={0}>
         {roomState.isNewChat ? <NewChatPage /> : <ChatRoomPage />}
       </Box>
-      <PromptInput text={inputText} setText={setInputText} onClick={handlePostButtonClick} />
+      <PromptInput onClick={handlePostButtonClick} />
     </>
   );
 }

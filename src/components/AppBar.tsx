@@ -58,15 +58,9 @@ export function SearchAppBar() {
     <Box sx={{ flexGrow: 1 }}>
       <AppBar sx={{ background: 'primary.main' }}>
         <Toolbar sx={{ background: 'primary.main' }}>
-          <Typography variant='h6' noWrap component='div' sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' } }}>
+          <Typography variant='h6' noWrap component='div' sx={{ flexGrow: 1 }}>
             ChatGPT API
           </Typography>
-          <Search>
-            <SearchIconWrapper>
-              <SearchIcon />
-            </SearchIconWrapper>
-            <StyledInputBase placeholder='Search…' inputProps={{ 'aria-label': 'search' }} />
-          </Search>
           <IconButton
             size='large'
             edge='end'
