@@ -2,7 +2,6 @@
 import { useEffect } from 'react';
 import { createChat } from 'completions';
 import { encode } from 'gpt-tokenizer';
-import { Timestamp } from 'firebase/firestore';
 import { Box, Card, Divider, Stack, Avatar, Typography } from '@mui/material';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import ReactMarkdown from 'react-markdown';
@@ -81,7 +80,7 @@ export function ChatRoomPage() {
                       comletionTokens +
                       ', total:' +
                       (promptTokens + comletionTokens),
-                    date: Timestamp.now(),
+                    date: new Date(),
                   };
                   updatedMessage = newMessage; // 更新されたメッセージを保持
                   return newMessage;
@@ -262,7 +261,11 @@ export function ChatRoomPage() {
                     makeMarkedHtml(message.text)
                   )}
                   <Stack marginBottom={1.5} sx={{ color: 'grey.500' }} width={'100%'}>
-                    <Typography variant='caption' textAlign='right'>{`[${message.date.toDate().toLocaleString()}]`}</Typography>
+                    <Typography variant='caption' textAlign='right'>
+                      {message.date.getFullYear() > 1
+                        ? `[${message.date.toLocaleDateString() + ' ' + message.date.toLocaleTimeString()}]`
+                        : `[Web Chat]`}
+                    </Typography>
                     {message.role === 'assistant' ? (
                       <Typography variant='caption' sx={{ lineBreak: 'anywhere' }} textAlign='right'>
                         {message.usage}

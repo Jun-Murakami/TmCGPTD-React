@@ -30,9 +30,9 @@ export function ListItemGradient({ room, currentRoomId, handleChatRoomClick }: L
           {room.id === currentRoomId ? <RateReviewOutlinedIcon /> : <ChatBubbleOutlineOutlinedIcon />}
         </ListItemIcon>
         <ListItemText
-          sx={{ m: 0 }}
-          primary={room.RoomName.length > 17 ? room.RoomName.substring(0, 15) : room.RoomName}
-          secondary={room.date.toDate().toLocaleString()}
+          sx={{ m: 0, width: 220 }}
+          primary={room.RoomName.length > 17 ? room.RoomName.substring(0, 17) : room.RoomName}
+          secondary={room.date.toLocaleDateString()}
           secondaryTypographyProps={{ fontSize: '0.8rem' }}
           primaryTypographyProps={{
             component: 'div',

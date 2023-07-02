@@ -1,15 +1,13 @@
-import { Timestamp } from "firebase/firestore";
-
 export type ChatRoom = {
   id?: string;
   RoomName: string;
-  date: Timestamp;
-}
+  date: Date;
+};
 
 export type Message = {
   id?: string;
   role: 'system' | 'user' | 'assistant';
-  date: Timestamp;
+  date: Date;
   text: string;
   usage?: string;
 };
@@ -27,4 +25,4 @@ export type CurrentRoomState = {
   currentMessages: Message[];
   userInput: string;
   isNewInputAdded: boolean;
-}
+};

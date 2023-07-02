@@ -1,7 +1,7 @@
 import { useState, useEffect, ReactNode } from 'react';
 
 // URLを検出するための正規表現
-const urlPattern = /(https?:\/\/[^\s]+)/g;
+const urlPattern = /(https?:\/\/[^\s]+|localhost:[^\s]*)/g;
 
 export function useWrapUrlsInSpan(text: string): ReactNode[] | null {
   const [processedText, setProcessedText] = useState<ReactNode[] | null>(null);

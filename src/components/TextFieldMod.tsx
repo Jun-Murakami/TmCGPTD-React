@@ -45,7 +45,7 @@ export function TextFieldMod({ isEditing, text, isSaved, id = '', setText }: Edi
               newAssitantMessage = { ...message, text: '' };
               return newAssitantMessage;
             } else if (message.id === id) {
-              newUserMessage = { ...message, text: editableText, date: Timestamp.now() };
+              newUserMessage = { ...message, text: editableText, date: new Date() };
               return newUserMessage;
             } else {
               return message;
