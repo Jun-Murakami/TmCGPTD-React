@@ -20,7 +20,7 @@ export function TextFieldMod({ isEditing, text, isSaved, id = '', setText }: Edi
   const setCurrentMessages = useChatStore((state) => state.setCurrentMessages);
   const roomState = useChatStore((state) => state.roomState);
   const setRoomState = useChatStore((state) => state.setRoomState);
-  const uid = useUserStore<string | null>((state) => state.uid);
+  const uuid = useUserStore<string | null>((state) => state.uuid);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setEditableText(event.target.value);
@@ -53,7 +53,7 @@ export function TextFieldMod({ isEditing, text, isSaved, id = '', setText }: Edi
           })
         );
         const fetchAndSetMessages = async () => {
-          await updateMessageDb(uid!, roomState.currentRoomId!, newUserMessage!);
+          await updateMessageDb(uuid!, roomState.currentRoomId!, newUserMessage!);
           setRoomState((prev) => ({ ...prev, userInput: editableText.trim(), isNewInputAdded: true }));
         };
         fetchAndSetMessages();
@@ -68,7 +68,7 @@ export function TextFieldMod({ isEditing, text, isSaved, id = '', setText }: Edi
           }
         });
         const fetchAndSetMessages = async () => {
-          await updateMessageDb(uid!, roomState.currentRoomId!, newMessage!);
+          await updateMessageDb(uuid!, roomState.currentRoomId!, newMessage!);
           setCurrentMessages(newMessages);
         };
         fetchAndSetMessages();

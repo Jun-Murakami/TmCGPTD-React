@@ -24,8 +24,8 @@ export function ChatRoomPage() {
   const setRoomState = useChatStore((state) => state.setRoomState);
   const currentMessages = useChatStore<Message[]>((state) => state.currentMessages);
   const setCurrentMessages = useChatStore((state) => state.setCurrentMessages);
-  const userAvatar = useUserStore<string | undefined>((state) => state.photoURL);
-  const uid = useUserStore<string | null>((state) => state.uid);
+  const userAvatar = useUserStore<string | null>((state) => state.avatarUrl);
+  const uuid = useUserStore<string | null>((state) => state.uuid);
   const showDialog = useDialogStore((state) => state.showDialog);
 
   const { systemMessageState, handleSystemEdit, handleSystemSaved, handleSystemCancel } = useSystemMessage();
@@ -106,7 +106,7 @@ export function ChatRoomPage() {
 
       // sendMessageが完了した後にデータベースを更新
       if (updatedMessage) {
-        await updateAssistantMessageDb(uid!, roomState.currentRoomId!, updatedMessage);
+        await updateAssistantMessageDb(uuid!, roomState.currentRoomId!, updatedMessage);
       }
     };
     getAssistantMessage();
@@ -121,9 +121,9 @@ export function ChatRoomPage() {
 
   //currentRoomIdが変更されたら、currentMessagesを更新-----------------------------------------------
   useEffect(() => {
-    if (!uid || !roomState.currentRoomId) return;
+    if (!uuid || !roomState.currentRoomId) return;
     const getMessageAsync = async () => {
-      await getMessagesDb(uid, roomState.currentRoomId!).then(setCurrentMessages);
+      await getMessagesDb(uuid, roomState.currentRoomId!).then(setCurrentMessages);
       if (roomState.userInput !== '') {
         setRoomState((prevState) => ({
           ...prevState,
@@ -138,14 +138,19 @@ export function ChatRoomPage() {
 
   //currentMessagesが変更されたら、systemMessageId、userLastId、assistantLastIdを更新-----------------------------------------------
   useEffect(() => {
-    //システムメッセージの更新
-    setRoomState((prevState) => ({
-      ...prevState,
-      systemMessageId: currentMessages.find((message) => message.role === 'system')?.id,
-      systemMessage: currentMessages.find((message) => message.role === 'system')?.text,
-    }));
+    //最後のシステムメッセージの更新
+    for (let i = currentMessages.length - 1; i >= 0; i--) {
+      if (currentMessages[i].role === 'system') {
+        setRoomState((prevState) => ({
+          ...prevState,
+          systemMessageId: currentMessages.find((message) => message.role === 'system')?.id,
+          systemMessage: currentMessages.find((message) => message.role === 'system')?.text,
+        }));
+        break;
+      }
+    }
 
-    //ユーザーメッセージの更新
+    //最後のユーザーメッセージの更新
     for (let i = currentMessages.length - 1; i >= 0; i--) {
       if (currentMessages[i].role === 'user') {
         setRoomState((prevState) => ({
@@ -157,7 +162,7 @@ export function ChatRoomPage() {
       }
     }
 
-    //アシスタントメッセージの更新
+    //最後のアシスタントメッセージの更新
     for (let i = currentMessages.length - 1; i >= 0; i--) {
       if (currentMessages[i].role === 'assistant') {
         setRoomState((prevState) => ({
@@ -223,7 +228,7 @@ export function ChatRoomPage() {
               <Stack direction='row'>
                 {message.role === 'user' ? (
                   <>
-                    <Avatar alt='Avatar' src={userAvatar} sx={{ width: 30, height: 30 }} />
+                    <Avatar alt='Avatar' src={userAvatar!} sx={{ width: 30, height: 30 }} />
                     {message.id === roomState.lastUserMessageId && (
                       <EditPromptButton
                         isEditing={userMessageState.isTextEditing}

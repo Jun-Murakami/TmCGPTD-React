@@ -1,24 +1,25 @@
-// src/store.ts
+// src\store\userStore.ts
 import { create } from 'zustand';
+import { Session } from '@supabase/supabase-js';
 
 type State = {
-  isLoggedIn: boolean;
-  uid: string | null;
-  displayName: string | null;
-  photoURL: string | undefined;
+  session: Session | null;
+  uuid: string | null;
+  nickname: string | null;
+  avatarUrl: string | null;
   apiKey: string | null;
-  logIn: (uid: string, displayName: string, photoURL: string) => void;
-  logOut: () => void;
+  setSession: (session: Session | null) => void;
+  setUserInfo: (uuid: string | null, nickname: string | null, avatarUrl: string | null) => void;
   setApiKey: (apiKey: string) => void;
 };
 
 export const useUserStore = create<State>((set) => ({
-  isLoggedIn: false,
-  uid: null,
-  displayName: null,
-  photoURL: undefined,
+  session: null,
+  uuid: null,
+  nickname: null,
+  avatarUrl: null,
   apiKey: null,
-  logIn: (uid, displayName, photoURL) => set({ isLoggedIn: true, uid, displayName, photoURL }),
-  logOut: () => set({ isLoggedIn: false, uid: null, displayName: null, photoURL: undefined }),
+  setSession: (session) => set({ session }),
+  setUserInfo: (uuid, nickname, avatarUrl) => set({ uuid, nickname, avatarUrl }),
   setApiKey: (apiKey: string) => set({ apiKey }),
 }));

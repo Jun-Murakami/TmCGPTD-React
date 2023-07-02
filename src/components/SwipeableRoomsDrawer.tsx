@@ -2,14 +2,15 @@ import React from 'react';
 import { useAppStore } from '../store/appStore';
 import { useChatStore } from '../store/chatStore';
 import { useUserStore } from '../store/userStore';
-import { signOut } from 'firebase/auth';
-import { auth } from '../services/firebase';
+import { supabase } from '../hooks/useSupabaseSession';
 import { useDialogStore, useInputDialogStore } from '../store/dialogStore';
 import {
   Box,
+  Button,
   FormControl,
   InputLabel,
   Select,
+  Stack,
   MenuItem,
   SwipeableDrawer,
   IconButton,
@@ -19,6 +20,7 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Typography,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { ListItemGradient } from './ListItemGradient';
@@ -30,6 +32,7 @@ import { SearchAppBar } from './AppBar';
 import AES from 'crypto-js/aes';
 
 export function SwipeableRoomsDrawer() {
+  const uuid = useUserStore((state) => state.uuid);
   const roomState = useChatStore((state) => state.roomState);
   const setRoomState = useChatStore((state) => state.setRoomState);
   const setDrawerIsOpen = useAppStore((state) => state.setDrawerIsOpen);
@@ -43,17 +46,41 @@ export function SwipeableRoomsDrawer() {
 
   const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
-  const handleChatRoomClick = (RoomId: string) => (event: React.MouseEvent) => {
+  const handleChatRoomClick = (RoomId: string) => () => {
     if (roomState.isNewChat) setRoomState((prev) => ({ ...prev, isNewChat: false }));
     setRoomState((prev) => ({ ...prev, currentRoomId: RoomId }));
   };
 
-  const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-    } catch (error) {
-      await showDialog('Error signing out: ' + error, 'Error');
+  const handleChangePassword = async () => {
+    let result = await showInputDialog('', 'Enter your new password.', 'Password', true);
+    if (result === null || result === '' || result === undefined) return;
+    const { error } = await supabase.auth.updateUser({ password: result });
+    if (error) {
+      await showDialog('Password update failed: ' + error, 'Error');
+    } else {
+      await showDialog('Password has been updated.', 'Information');
     }
+  };
+
+  const handleDeleteAccount = async () => {
+    let result = await showDialog(
+      'Are you sure you want to delete your account? *All chat logs and templates stored in your account will be deleted.',
+      'Confimation',
+      true
+    );
+    if (result === null || result === undefined || !result) return;
+    const { error } = await supabase.rpc('deleteUser');
+    if (error) {
+      await showDialog('Error deleting user. Please contact the administrator. (bucketrelaywebapp@gmail.com) ' + error, 'Error');
+    } else {
+      await showDialog('User deleted.', 'Success');
+      await supabase.auth.signOut();
+    }
+  };
+
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) await showDialog('Error signing out: ' + error, 'Error');
   };
 
   const handleKeyInput = async () => {
@@ -170,6 +197,15 @@ export function SwipeableRoomsDrawer() {
           />
         ))}
       </List>
+      <Divider />
+      <Stack width={'100%'} textAlign={'center'}>
+        <Button sx={{ m: 2 }} onClick={handleChangePassword}>
+          <Typography variant='caption'>Change password</Typography>
+        </Button>
+        <Button sx={{ m: 2 }} onClick={handleDeleteAccount}>
+          <Typography variant='caption'>Delete account</Typography>
+        </Button>
+      </Stack>
     </Box>
   );
 

@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { auth } from './services/firebase';
+import { Auth } from '@supabase/auth-ui-react';
+import { ThemeSupa } from '@supabase/auth-ui-shared';
+import { supabase, useSupabaseSession } from './hooks/useSupabaseSession';
 import { useUserStore } from './store/userStore';
 import { Helmet } from 'react-helmet';
-import { LogInPage } from './components/LogInPage';
 import { useDialogStore } from './store/dialogStore';
 import { useInputDialogStore } from './store/dialogStore';
 import { ModalDialog } from './components/ModalDialog';
@@ -12,11 +13,9 @@ import AES from 'crypto-js/aes';
 import Utf8 from 'crypto-js/enc-utf8';
 
 function App() {
+  const session = useSupabaseSession();
   const isDialogVisible = useDialogStore((state) => state.isDialogVisible);
   const isInputDialogVisible = useInputDialogStore((state) => state.isDialogVisible);
-  const isLoggedIn = useUserStore((state) => state.isLoggedIn);
-  const logIn = useUserStore((state) => state.logIn);
-  const logOut = useUserStore((state) => state.logOut);
   const setApiKey = useUserStore((state) => state.setApiKey);
   const [language, setLanguage] = useState('en');
 
@@ -24,17 +23,6 @@ function App() {
     const browserLanguage = navigator.language.split('-')[0];
     setLanguage(browserLanguage);
   }, []);
-
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user) {
-        logIn(user.uid, user.displayName || '', user.photoURL || '');
-      } else {
-        logOut();
-      }
-    });
-    return unsubscribe;
-  }, [logIn, logOut]);
 
   useEffect(() => {
     const openAIKey = localStorage.getItem('encryptedKey');
@@ -51,7 +39,20 @@ function App() {
       </Helmet>
       {isDialogVisible && <ModalDialog />}
       {isInputDialogVisible && <InputDialog />}
-      {!isLoggedIn ? <LogInPage /> : <MainContainer />}
+      {!session ? (
+        <Auth
+          supabaseClient={supabase}
+          providers={['google', 'azure']}
+          appearance={{
+            theme: ThemeSupa,
+            style: {
+              container: { margin: '10px' },
+            },
+          }}
+        />
+      ) : (
+        <MainContainer />
+      )}
     </>
   );
 }

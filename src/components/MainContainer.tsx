@@ -14,19 +14,20 @@ import { Message } from '../types/types';
 
 export function MainContainer() {
   const showDialog = useDialogStore((state) => state.showDialog);
-
+  const session = useUserStore((state) => state.session);
   const roomState = useChatStore((state) => state.roomState);
   const setRoomState = useChatStore((state) => state.setRoomState);
   const setCurrentMessages = useChatStore((state) => state.setCurrentMessages);
   const inputText = useAppStore((state) => state.inputText);
   const setInputText = useAppStore((state) => state.setInputText);
 
-  const uid = useUserStore((state) => state.uid);
+  const uuid = useUserStore((state) => state.uuid);
   const apiKey = useUserStore((state) => state.apiKey);
 
   useEffect(() => {
+    console.log(session);
     const getChatRoomsAync = async () => {
-      const rooms = await getChatRoomsDb(uid!);
+      const rooms = await getChatRoomsDb(uuid!);
       setRoomState((prev) => ({ ...prev, chatRooms: rooms }));
     };
     getChatRoomsAync();
@@ -40,8 +41,8 @@ export function MainContainer() {
         { role: 'user', date: Timestamp.now(), text: inputText },
         { role: 'assistant', date: Timestamp.now(), text: '' },
       ];
-      const newRoomId = await createChatRoomAndMessagesDb(uid!, roomState.currentRoomName!, messages);
-      const newRooms = await getChatRoomsDb(uid!);
+      const newRoomId = await createChatRoomAndMessagesDb(uuid!, roomState.currentRoomName!, messages);
+      const newRooms = await getChatRoomsDb(uuid!);
       setRoomState((prev) => ({
         ...prev,
         chatRooms: newRooms,
@@ -55,8 +56,8 @@ export function MainContainer() {
         { role: 'user', date: Timestamp.now(), text: inputText },
         { role: 'assistant', date: Timestamp.now(), text: '' },
       ];
-      await addMessageDb(uid!, roomState.currentRoomId!, messages);
-      await getMessagesDb(uid!, roomState.currentRoomId!).then(setCurrentMessages);
+      await addMessageDb(uuid!, roomState.currentRoomId!, messages);
+      await getMessagesDb(uuid!, roomState.currentRoomId!).then(setCurrentMessages);
       setRoomState((prev) => ({ ...prev, isNewInputAdded: true, userInput: inputText }));
       setInputText('');
     } else if ((roomState.isNewChat && apiKey === null) || apiKey === '') {
