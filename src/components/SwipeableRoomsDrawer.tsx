@@ -6,16 +6,14 @@ import { supabase } from '../hooks/useSupabaseSession';
 import { useDialogStore, useInputDialogStore } from '../store/dialogStore';
 import {
   Box,
-  Button,
   FormControl,
   InputLabel,
   Select,
-  Stack,
-  MenuItem,
   SwipeableDrawer,
   IconButton,
   List,
   Divider,
+  MenuItem,
   ListItem,
   ListItemButton,
   ListItemIcon,
@@ -23,16 +21,27 @@ import {
   Typography,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
+import MuiAccordion, { AccordionProps } from '@mui/material/Accordion';
+import MuiAccordionSummary, { AccordionSummaryProps } from '@mui/material/AccordionSummary';
+import MuiAccordionDetails from '@mui/material/AccordionDetails';
 import { ListItemGradient } from './ListItemGradient';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ReviewsOutlinedIcon from '@mui/icons-material/ReviewsOutlined';
+import PersonOffIcon from '@mui/icons-material/PersonOff';
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
+import PasswordIcon from '@mui/icons-material/Password';
 import KeyIcon from '@mui/icons-material/Key';
 import LogoutIcon from '@mui/icons-material/Logout';
+import { AiIcon } from '../components/AiIcon';
 import { SearchAppBar } from './AppBar';
 import AES from 'crypto-js/aes';
 
 export function SwipeableRoomsDrawer() {
-  const uuid = useUserStore((state) => state.uuid);
+  const apiKey = useUserStore((state) => state.apiKey);
+  const setApiKey = useUserStore((state) => state.setApiKey);
+  const email = useUserStore((state) => state.email);
+  const setUserInfo = useUserStore((state) => state.setUserInfo);
   const roomState = useChatStore((state) => state.roomState);
   const setRoomState = useChatStore((state) => state.setRoomState);
   const setDrawerIsOpen = useAppStore((state) => state.setDrawerIsOpen);
@@ -41,7 +50,7 @@ export function SwipeableRoomsDrawer() {
   const setApiModel = useAppStore((state) => state.setApiModel);
   const showDialog = useDialogStore((state) => state.showDialog);
   const showInputDialog = useInputDialogStore((state) => state.showDialog);
-  const setApiKey = useUserStore((state) => state.setApiKey);
+
   const setInputText = useAppStore((state) => state.setInputText);
 
   const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -51,8 +60,21 @@ export function SwipeableRoomsDrawer() {
     setRoomState((prev) => ({ ...prev, currentRoomId: RoomId }));
   };
 
+  const handleChangeEmail = async () => {
+    let result = await showInputDialog('', 'Enter your new email address.', 'Email address', email);
+    if (result === null || result === '' || result === undefined) return;
+    const { error } = await supabase.auth.updateUser({ email: result });
+    if (error) {
+      await showDialog('Email address update failed: ' + error, 'Error');
+    } else {
+      const current = useUserStore.getState();
+      setUserInfo(current.uuid, result, current.nickname, current.avatarUrl);
+      await showDialog('Email address has been updated.', 'Information');
+    }
+  };
+
   const handleChangePassword = async () => {
-    let result = await showInputDialog('', 'Enter your new password.', 'Password', true);
+    let result = await showInputDialog('', 'Enter your new password.', 'Password', '', true);
     if (result === null || result === '' || result === undefined) return;
     const { error } = await supabase.auth.updateUser({ password: result });
     if (error) {
@@ -89,6 +111,7 @@ export function SwipeableRoomsDrawer() {
         '*The key entered will not be sent to the app provider.',
         'Enter your API key.',
         'API key',
+        apiKey,
         true
       );
       if (result === null || result === '' || result === undefined) return;
@@ -128,50 +151,105 @@ export function SwipeableRoomsDrawer() {
     justifyContent: 'flex-start',
   }));
 
+  const Accordion = styled((props: AccordionProps) => <MuiAccordion disableGutters elevation={0} square {...props} />)(
+    ({ theme }) => ({
+      border: `1px solid ${theme.palette.divider}`,
+      '&:not(:last-child)': {
+        borderBottom: 0,
+      },
+      '&:before': {
+        display: 'none',
+      },
+    })
+  );
+
+  const AccordionSummary = styled((props: AccordionSummaryProps) => (
+    <MuiAccordionSummary
+      onClick={(event) => event.stopPropagation()}
+      expandIcon={<ArrowForwardIosSharpIcon sx={{ fontSize: '0.9rem' }} />}
+      {...props}
+    />
+  ))(({ theme }) => ({
+    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .05)' : 'rgba(0, 0, 0, .03)',
+    flexDirection: 'row-reverse',
+    '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
+      transform: 'rotate(90deg)',
+    },
+    '& .MuiAccordionSummary-content': {
+      marginLeft: theme.spacing(1),
+    },
+  }));
+
+  const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
+    padding: theme.spacing(0),
+    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .05)' : 'rgba(0, 0, 0, .03)',
+    borderTop: '1px solid rgba(0, 0, 0, .125)',
+  }));
+
+  const [expanded, setExpanded] = React.useState<string | false>('');
+
+  const handleExpandChange = (panel: string) => (event: React.SyntheticEvent, newExpanded: boolean) => {
+    setExpanded(newExpanded ? panel : false);
+  };
+
+  const settingsItems = [
+    { icon: <KeyIcon />, text: 'API key', handler: handleKeyInput },
+    { icon: <MailOutlineIcon />, text: 'Change email address', handler: handleChangeEmail },
+    { icon: <PasswordIcon />, text: 'Change password', handler: handleChangePassword },
+    { icon: <PersonOffIcon />, text: 'Delete account', handler: handleDeleteAccount },
+    { icon: <LogoutIcon />, text: 'Sign out', handler: handleSignOut },
+  ];
+
   const list = () => (
     <Box sx={{ auto: 250 }} role='presentation' onClick={toggleDrawer(false)} onKeyDown={toggleDrawer(false)}>
       <Divider />
-      <FormControl variant='standard' sx={{ m: 1, marginTop: 2, marginLeft: 2, minWidth: 120 }}>
-        <InputLabel id='simple-select-standard-label'>API Model</InputLabel>
-        <Select
-          labelId='simple-select-standard-label'
-          id='simple-select-standard'
-          value={apiModel}
-          onChange={(event) => setApiModel(event.target.value as string)}
-          label='Model'
-        >
-          <MenuItem value='gpt-3.5-turbo'>gpt-3.5-turbo</MenuItem>
-          <MenuItem value='gpt-4'>gpt-4</MenuItem>
-          <MenuItem value='gpt-3.5-turbo-0613'>gpt-3.5-turbo-0613</MenuItem>
-          <MenuItem value='gpt-4-0613'>gpt-4-0613</MenuItem>
-          <MenuItem value='gpt-3.5-turbo-16k'>gpt-3.5-turbo-16k</MenuItem>
-          <MenuItem value='gpt-4-32k'>gpt-4-32k</MenuItem>
-        </Select>
-      </FormControl>
       <List>
         <ListItem disablePadding>
-          <ListItemButton onClick={handleKeyInput}>
+          <ListItemButton>
             <ListItemIcon>
-              <KeyIcon />
+              <AiIcon sx={{ fontSize: 24, m: 0 }} color='primary' />
             </ListItemIcon>
-            <ListItemText
-              primary='API key'
-              primaryTypographyProps={{ component: 'div', sx: { left: -17, overflow: 'hidden', position: 'relative' } }}
-            />
-          </ListItemButton>
-        </ListItem>
-        <ListItem disablePadding>
-          <ListItemButton onClick={handleSignOut}>
-            <ListItemIcon>
-              <LogoutIcon />
-            </ListItemIcon>
-            <ListItemText
-              primary='Sign out'
-              primaryTypographyProps={{ component: 'div', sx: { left: -17, overflow: 'hidden', position: 'relative' } }}
-            />
+            <FormControl variant='standard' sx={{ marginLeft: -2, minWidth: 120 }}>
+              <InputLabel id='simple-select-standard-label'>API Model</InputLabel>
+              <Select
+                labelId='simple-select-standard-label'
+                id='simple-select-standard'
+                value={apiModel}
+                onChange={(event) => setApiModel(event.target.value as string)}
+                onClick={(event) => event.stopPropagation()}
+                label='Model'
+              >
+                <MenuItem value='gpt-3.5-turbo'>gpt-3.5-turbo</MenuItem>
+                <MenuItem value='gpt-4'>gpt-4</MenuItem>
+                <MenuItem value='gpt-3.5-turbo-0613'>gpt-3.5-turbo-0613</MenuItem>
+                <MenuItem value='gpt-4-0613'>gpt-4-0613</MenuItem>
+                <MenuItem value='gpt-3.5-turbo-16k'>gpt-3.5-turbo-16k</MenuItem>
+                <MenuItem value='gpt-4-32k'>gpt-4-32k</MenuItem>
+              </Select>
+            </FormControl>
           </ListItemButton>
         </ListItem>
       </List>
+      <Accordion expanded={expanded === 'panel1'} onChange={handleExpandChange('panel1')}>
+        <AccordionSummary aria-controls='panel1d-content' id='panel1d-header'>
+          <Typography marginLeft={2}>Settings</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <List>
+            {settingsItems.map((item, index) => (
+              <ListItem key={index} disablePadding>
+                <ListItemButton onClick={item.handler}>
+                  <ListItemIcon>{item.icon}</ListItemIcon>
+                  <ListItemText
+                    primary={item.text}
+                    primaryTypographyProps={{ component: 'div', sx: { left: -17, overflow: 'hidden', position: 'relative' } }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        </AccordionDetails>
+      </Accordion>
       <Divider />
       <List>
         <ListItem disablePadding>
@@ -198,14 +276,6 @@ export function SwipeableRoomsDrawer() {
         ))}
       </List>
       <Divider />
-      <Stack width={'100%'} textAlign={'center'}>
-        <Button sx={{ m: 2 }} onClick={handleChangePassword}>
-          <Typography variant='caption'>Change password</Typography>
-        </Button>
-        <Button sx={{ m: 2 }} onClick={handleDeleteAccount}>
-          <Typography variant='caption'>Delete account</Typography>
-        </Button>
-      </Stack>
     </Box>
   );
 
@@ -222,7 +292,6 @@ export function SwipeableRoomsDrawer() {
         onOpen={toggleDrawer(true)}
         disableBackdropTransition={!iOS}
         disableDiscovery={iOS}
-        sx={{ zIndex: 9999 }}
       >
         <DrawerHeader>
           <IconButton onClick={toggleDrawer(false)}>

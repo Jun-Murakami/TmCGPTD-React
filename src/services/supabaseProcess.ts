@@ -4,13 +4,17 @@ import { supabase } from '../hooks/useSupabaseSession';
 export async function getChatRoomsDb(userId: string): Promise<ChatRoom[]> {
   const { data, error } = await supabase
     .from('chatrooms')
-    .select('id, title, updated_on')
+    .select('id, updated_on, title, category, last_prompt, json, json_prev')
     .order('updated_on', { ascending: false });
   if (data) {
     return data.map((chatRoom) => ({
       id: chatRoom.id,
-      RoomName: chatRoom.title,
       date: new Date(chatRoom.updated_on),
+      RoomName: chatRoom.title,
+      category: chatRoom.category,
+      lastPrompt: chatRoom.last_prompt,
+      json: chatRoom.json,
+      jsonprev: chatRoom.json_prev,
     }));
   } else if (error) {
     console.log('error', error);

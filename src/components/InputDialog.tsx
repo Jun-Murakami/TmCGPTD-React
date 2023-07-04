@@ -1,46 +1,38 @@
-import React from "react";
-import { useInputDialogStore } from "../store/dialogStore";
-import { useUserStore } from "../store/userStore";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
+import React from 'react';
+import { useInputDialogStore } from '../store/dialogStore';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 
 export function InputDialog() {
   const hideDialog = useInputDialogStore((state) => state.hideDialog);
   const resolveDialog = useInputDialogStore((state) => state.resolveDialog);
-  const apiKey = useUserStore((state) => state.apiKey);
+  const defaultValue = useInputDialogStore((state) => state.defaultValue);
   const isPassword = useInputDialogStore((state) => state.isPassword);
 
-  let inputValue: string = "";
+  let inputValue: string = '';
 
   function setInputValue(value: string) {
     inputValue = value;
   }
 
   return (
-    <Dialog
-      open={useInputDialogStore((state) => state.isDialogVisible)}
-      onClose={hideDialog}
-    >
-      <DialogTitle>
-        {useInputDialogStore((state) => state.dialogTitle)}
-      </DialogTitle>
+    <Dialog open={useInputDialogStore((state) => state.isDialogVisible)} onClose={hideDialog}>
+      <DialogTitle>{useInputDialogStore((state) => state.dialogTitle)}</DialogTitle>
       <DialogContent>
-        <DialogContentText>
-          {useInputDialogStore((state) => state.dialogMessage)}
-        </DialogContentText>
+        <DialogContentText>{useInputDialogStore((state) => state.dialogMessage)}</DialogContentText>
         <TextField
           autoFocus
-          margin="dense"
-          id={isPassword ? "filled-password-input" : "filled-basic"}
-          variant="filled"
+          margin='dense'
+          id={isPassword ? 'filled-password-input' : 'filled-basic'}
+          variant='filled'
           label={useInputDialogStore((state) => state.dialogLabel)}
-          type={isPassword ? "password" : "text"}
-          defaultValue={apiKey}
+          type={isPassword ? 'password' : 'text'}
+          defaultValue={defaultValue}
           fullWidth
           onChange={(e) => {
             setInputValue(e.target.value);
@@ -49,7 +41,7 @@ export function InputDialog() {
       </DialogContent>
       <DialogActions>
         <Button
-          variant="contained"
+          variant='contained'
           onClick={() => {
             resolveDialog?.(inputValue);
             hideDialog();
@@ -58,9 +50,9 @@ export function InputDialog() {
           OK
         </Button>
         <Button
-          variant="outlined"
+          variant='outlined'
           onClick={() => {
-            resolveDialog?.("");
+            resolveDialog?.('');
             hideDialog();
           }}
         >

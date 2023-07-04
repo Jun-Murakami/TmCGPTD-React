@@ -14,7 +14,7 @@ export function SearchAppBar() {
       <AppBar sx={{ background: 'primary.main' }}>
         <Toolbar sx={{ background: 'primary.main' }}>
           <Typography variant='h6' noWrap component='div' sx={{ flexGrow: 1 }}>
-            ChatGPT API
+            TmCGPT Debugger
           </Typography>
           <IconButton
             size='large'

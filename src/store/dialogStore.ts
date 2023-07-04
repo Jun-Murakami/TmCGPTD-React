@@ -21,7 +21,7 @@ export const useDialogStore = create<DialogState>((set, get) => ({
       dialogTitle: title,
       dialogMessage: message,
       isDialogTwoButtons: isTwoButtons,
-      isDialogVisible: true
+      isDialogVisible: true,
     });
 
     return new Promise((resolve) => {
@@ -35,9 +35,9 @@ export const useDialogStore = create<DialogState>((set, get) => ({
     }
     set({
       isDialogVisible: false,
-      resolveDialog: null
+      resolveDialog: null,
     });
-  }
+  },
 }));
 
 type inputDialogState = {
@@ -45,9 +45,16 @@ type inputDialogState = {
   dialogMessage: string;
   dialogTitle: string;
   dialogLabel: string;
+  defaultValue: string | null;
   isPassword: boolean;
   resolveDialog: ((value: string | PromiseLike<string>) => void) | null;
-  showDialog: (message: string, title: string, label: string, isPassword?: boolean) => Promise<string>;
+  showDialog: (
+    message: string,
+    title: string,
+    label: string,
+    defaultValue: string | null,
+    isPassword?: boolean
+  ) => Promise<string>;
   hideDialog: () => void;
 };
 
@@ -56,15 +63,17 @@ export const useInputDialogStore = create<inputDialogState>((set, get) => ({
   dialogMessage: '',
   dialogTitle: '',
   dialogLabel: '',
+  defaultValue: '',
   isPassword: false,
   resolveDialog: null,
-  showDialog: (message, title, label, isPassword=false) => {
+  showDialog: (message, title, label, defaultValue = '', isPassword = false) => {
     set({
       dialogTitle: title,
       dialogMessage: message,
       dialogLabel: label,
+      defaultValue: defaultValue,
       isPassword: isPassword,
-      isDialogVisible: true
+      isDialogVisible: true,
     });
 
     return new Promise((resolve) => {
@@ -78,7 +87,7 @@ export const useInputDialogStore = create<inputDialogState>((set, get) => ({
     }
     set({
       isDialogVisible: false,
-      resolveDialog: null
+      resolveDialog: null,
     });
-  }
+  },
 }));

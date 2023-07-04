@@ -1,7 +1,11 @@
 export type ChatRoom = {
   id?: string;
-  RoomName: string;
   date: Date;
+  RoomName: string;
+  category?: string;
+  lastPrompt?: string;
+  json?: string;
+  jsonprev?: string;
 };
 
 export type Message = {

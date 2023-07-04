@@ -24,18 +24,13 @@ export const theme = createTheme({
         },
         .markdownBody{
           line-height: 1.44;
-          width: 100%;
         },
         .markdownBody pre{
           margin : 0;
           font-size: 14px;
         },
         .markdownBody code{
-          line-break: anywhere;
-          word-break: break-all;
-          overflow-wrap: break-word;
-          text-wrap: wrap;
-          overflow: auto;
+          overflow-x: scroll;
           -webkit-overflow-scrolling: touch;
         },
         .markdownBody ul{

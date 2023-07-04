@@ -10,7 +10,7 @@ export const CodeBlock: CodeComponent = ({ inline, className, children }) => {
   const lang = match && match[1] ? match[1] : '';
   const borderRadiusClass = lang ? 'border-bottom' : 'border-all';
   return (
-    <Box>
+    <>
       {lang && (
         <Box
           sx={{
@@ -26,10 +26,7 @@ export const CodeBlock: CodeComponent = ({ inline, className, children }) => {
           {lang}
         </Box>
       )}
-      <Highlight className={`${lang} ${borderRadiusClass}`}>
-        {String(children).replace(/\n$/, '')}
-      </Highlight>
-    </Box>
+      <Highlight className={`${lang} ${borderRadiusClass}`}>{String(children).replace(/\n$/, '')}</Highlight>
+    </>
   );
 };
-

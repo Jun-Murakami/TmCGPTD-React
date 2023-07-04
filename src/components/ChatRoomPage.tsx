@@ -5,7 +5,7 @@ import { encode } from 'gpt-tokenizer';
 import { Box, Card, Divider, Stack, Avatar, Typography } from '@mui/material';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import ReactMarkdown from 'react-markdown';
-import { getMessagesDb, updateAssistantMessageDb } from '../services/firestore';
+import { getMessagesDb, updateAssistantMessageDb } from '../services/supabaseProcess';
 import { Message } from '../types/types';
 import { useSystemMessage } from '../hooks/useSystemMessage';
 import { useUserMessage } from '../hooks/useUserMessage';
@@ -200,80 +200,76 @@ export function ChatRoomPage() {
         <div key={message.id}>
           {message.id === roomState.systemMessageId ? (
             <Box sx={{ p: 1.5, alignItems: 'left' }}>
-              <Stack direction='row'>
-                <Stack spacing={2}>
-                  <PsychologyIcon sx={{ fontSize: 30, marginTop: 0 }} color='primary' />
-                  <EditPromptButton
-                    isEditing={systemMessageState.isTextEditing}
-                    onEdit={handleSystemEdit}
-                    onSave={handleSystemSaved}
-                    onCancel={handleSystemCancel}
-                    marginTop={0}
-                  />
-                </Stack>
-                <Box sx={{ pl: 1.5, width: '100%' }}>
-                  <TextFieldMod
-                    isSaved={systemMessageState.isTextSaved}
-                    isEditing={systemMessageState.isTextEditing}
-                    text={roomState.systemMessage!}
-                    id={message.id}
-                    setText={(newText) => setRoomState((prev) => ({ ...prev, systemMessage: newText }))}
-                  />
-                </Box>
+              <Stack spacing={2}>
+                <PsychologyIcon sx={{ fontSize: 30, marginTop: 0 }} color='primary' />
+                <EditPromptButton
+                  isEditing={systemMessageState.isTextEditing}
+                  onEdit={handleSystemEdit}
+                  onSave={handleSystemSaved}
+                  onCancel={handleSystemCancel}
+                  marginTop={0}
+                />
               </Stack>
+              <Box sx={{ pl: 5, width: '100%' }} marginTop={-3.4}>
+                <TextFieldMod
+                  isSaved={systemMessageState.isTextSaved}
+                  isEditing={systemMessageState.isTextEditing}
+                  text={roomState.systemMessage!}
+                  id={message.id}
+                  setText={(newText) => setRoomState((prev) => ({ ...prev, systemMessage: newText }))}
+                />
+              </Box>
             </Box>
           ) : (
-            <Card sx={{ p: 1.5 }}>
-              <Stack direction='row'>
-                {message.role === 'user' ? (
-                  <>
-                    <Avatar alt='Avatar' src={userAvatar!} sx={{ width: 30, height: 30 }} />
-                    {message.id === roomState.lastUserMessageId && (
-                      <EditPromptButton
-                        isEditing={userMessageState.isTextEditing}
-                        onEdit={handleUserEdit}
-                        onSave={handleUserSaved}
-                        onCancel={handleUserCancel}
-                        marginTop={2}
-                      />
-                    )}
-                  </>
-                ) : (
-                  <AiIcon sx={{ fontSize: 30 }} color='primary' />
-                )}
-                <Stack sx={{ pl: 1.5 }} marginTop={-1.5} width={'100%'}>
-                  {message.role === 'user' ? (
-                    <Box marginTop={1.5} sx={{ width: '100%' }}>
-                      <TextFieldMod
-                        isSaved={userMessageState.isTextSaved}
-                        isEditing={userMessageState.isTextEditing}
-                        text={message.id === roomState.lastUserMessageId ? roomState.lastUserMessage! : message.text!}
-                        id={message.id!}
-                        setText={(newText) =>
-                          setRoomState((prevState) => ({
-                            ...prevState,
-                            lastUserMessage: newText,
-                          }))
-                        }
-                      />
-                    </Box>
-                  ) : (
-                    makeMarkedHtml(message.text)
+            <Card sx={{ p: 1.5, display: 'block' }}>
+              {message.role === 'user' ? (
+                <>
+                  <Avatar alt='Avatar' src={userAvatar!} sx={{ width: 30, height: 30 }} />
+                  {message.id === roomState.lastUserMessageId && (
+                    <EditPromptButton
+                      isEditing={userMessageState.isTextEditing}
+                      onEdit={handleUserEdit}
+                      onSave={handleUserSaved}
+                      onCancel={handleUserCancel}
+                      marginTop={2}
+                    />
                   )}
-                  <Stack marginBottom={1.5} sx={{ color: 'grey.500' }} width={'100%'}>
-                    <Typography variant='caption' textAlign='right'>
-                      {message.date.getFullYear() > 1
-                        ? `[${message.date.toLocaleDateString() + ' ' + message.date.toLocaleTimeString()}]`
-                        : `[Web Chat]`}
+                </>
+              ) : (
+                <AiIcon sx={{ fontSize: 30 }} color='primary' />
+              )}
+              <Stack sx={{ pl: 5 }} marginTop={-6.1} width={'100%'}>
+                {message.role === 'user' ? (
+                  <Box marginTop={2.7} sx={{ width: '100%' }}>
+                    <TextFieldMod
+                      isSaved={userMessageState.isTextSaved}
+                      isEditing={userMessageState.isTextEditing}
+                      text={message.id === roomState.lastUserMessageId ? roomState.lastUserMessage! : message.text!}
+                      id={message.id!}
+                      setText={(newText) =>
+                        setRoomState((prevState) => ({
+                          ...prevState,
+                          lastUserMessage: newText,
+                        }))
+                      }
+                    />
+                  </Box>
+                ) : (
+                  makeMarkedHtml(message.text)
+                )}
+                <Stack marginBottom={1.5} sx={{ color: 'grey.500' }} width={'100%'}>
+                  <Typography variant='caption' textAlign='right'>
+                    {message.date.getFullYear() > 1
+                      ? `[${message.date.toLocaleDateString() + ' ' + message.date.toLocaleTimeString()}]`
+                      : `[Web Chat]`}
+                  </Typography>
+                  {message.role === 'assistant' ? (
+                    <Typography variant='caption' sx={{ lineBreak: 'anywhere', whiteSpace: 'pre-wrap' }} textAlign='right'>
+                      {message.usage}
                     </Typography>
-                    {message.role === 'assistant' ? (
-                      <Typography variant='caption' sx={{ lineBreak: 'anywhere' }} textAlign='right'>
-                        {message.usage}
-                      </Typography>
-                    ) : (
-                      ''
-                    )}
-                  </Stack>
+                  ) : (
+                    ''
+                  )}
                 </Stack>
               </Stack>
             </Card>

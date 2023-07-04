@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Timestamp } from 'firebase/firestore';
 import { TextField, Typography } from '@mui/material';
 import { Message } from '../types/types';
 import { useChatStore } from '../store/chatStore';
 import { useUserStore } from '../store/userStore';
-import { updateMessageDb } from '../services/firestore';
+import { updateMessageDb } from '../services/supabaseProcess';
 import { useWrapUrlsInSpan } from '../hooks/useWrapUrlsInSpan';
 
 export interface EditableTextAreaProps {

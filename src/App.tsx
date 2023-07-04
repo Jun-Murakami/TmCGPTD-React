@@ -3,6 +3,7 @@ import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase, useSupabaseSession } from './hooks/useSupabaseSession';
 import { useUserStore } from './store/userStore';
+import { useAppStore } from './store/appStore';
 import { Helmet } from 'react-helmet';
 import { useDialogStore } from './store/dialogStore';
 import { useInputDialogStore } from './store/dialogStore';
@@ -17,11 +18,16 @@ function App() {
   const isDialogVisible = useDialogStore((state) => state.isDialogVisible);
   const isInputDialogVisible = useInputDialogStore((state) => state.isDialogVisible);
   const setApiKey = useUserStore((state) => state.setApiKey);
+  const setApiModel = useAppStore((state) => state.setApiModel);
   const [language, setLanguage] = useState('en');
 
   useEffect(() => {
     const browserLanguage = navigator.language.split('-')[0];
     setLanguage(browserLanguage);
+    console.log('browserLanguage', browserLanguage);
+    const apiModel = localStorage.getItem('apiModel');
+    setApiModel(apiModel ? apiModel : 'gpt-3.5-turbo');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

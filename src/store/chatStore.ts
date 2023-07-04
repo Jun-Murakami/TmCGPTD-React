@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { produce } from 'immer';
-import { getMessagesDb } from '../services/firestore';
+import { getMessagesDb } from '../services/supabaseProcess';
 import { Message, ChatRoom } from '../types/types';
 
 type RoomState = {
@@ -43,25 +43,31 @@ export const useChatStore = create<ChatStore>((set) => ({
   },
   currentMessages: [],
   setRoomState: (newState) =>
-    set((state) => produce(state, (draftState) => {
-      if (typeof newState === 'function') {
-        draftState.roomState = newState(draftState.roomState);
-      } else {
-        draftState.roomState = { ...draftState.roomState, ...newState };
-      }
-    })),
+    set((state) =>
+      produce(state, (draftState) => {
+        if (typeof newState === 'function') {
+          draftState.roomState = newState(draftState.roomState);
+        } else {
+          draftState.roomState = { ...draftState.roomState, ...newState };
+        }
+      })
+    ),
   setCurrentMessages: (messages) =>
-    set((state) => produce(state, (draftState) => {
-      if (typeof messages === 'function') {
-        draftState.currentMessages = messages(draftState.currentMessages);
-      } else {
-        draftState.currentMessages = messages;
-      }
-    })),
+    set((state) =>
+      produce(state, (draftState) => {
+        if (typeof messages === 'function') {
+          draftState.currentMessages = messages(draftState.currentMessages);
+        } else {
+          draftState.currentMessages = messages;
+        }
+      })
+    ),
   getMessages: async (userId, roomId) => {
     const messages = await getMessagesDb(userId, roomId);
-    set((state) => produce(state, (draftState) => {
-      draftState.currentMessages = messages;
-    }));
+    set((state) =>
+      produce(state, (draftState) => {
+        draftState.currentMessages = messages;
+      })
+    );
   },
 }));

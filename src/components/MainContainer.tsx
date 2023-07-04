@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { Timestamp } from 'firebase/firestore';
 import { useChatStore } from '../store/chatStore';
 import { useUserStore } from '../store/userStore';
 import { useAppStore } from '../store/appStore';
@@ -9,12 +8,11 @@ import { SwipeableRoomsDrawer } from '../components/SwipeableRoomsDrawer';
 import { PromptInput } from './PromptInput';
 import { ChatRoomPage } from './ChatRoomPage';
 import { NewChatPage } from './NewChatPage';
-import { createChatRoomAndMessagesDb, getChatRoomsDb, addMessageDb, getMessagesDb } from '../services/firestore';
+import { createChatRoomAndMessagesDb, getChatRoomsDb, addMessageDb, getMessagesDb } from '../services/supabaseProcess';
 import { Message } from '../types/types';
 
 export function MainContainer() {
   const showDialog = useDialogStore((state) => state.showDialog);
-  const session = useUserStore((state) => state.session);
   const roomState = useChatStore((state) => state.roomState);
   const setRoomState = useChatStore((state) => state.setRoomState);
   const setCurrentMessages = useChatStore((state) => state.setCurrentMessages);
@@ -25,7 +23,6 @@ export function MainContainer() {
   const apiKey = useUserStore((state) => state.apiKey);
 
   useEffect(() => {
-    console.log(session);
     const getChatRoomsAync = async () => {
       const rooms = await getChatRoomsDb(uuid!);
       setRoomState((prev) => ({ ...prev, chatRooms: rooms }));
