@@ -23,10 +23,12 @@ export async function useProcessSendMessage() {
 
     const getAssistantMessage = async () => {
       // ユーザー入力以外のメッセージを取得
-      const messages = currentMessages.slice(0, -2).map((message) => {
+      let messages = currentMessages.slice(0, -2).map((message) => {
         return { role: message.role, content: message.text };
       });
 
+      let isSummarized: boolean = false; // 要約フラグをリセット
+      let isDeleteHistory: boolean = false; // 履歴削除フラグをリセット
       //会話履歴にセット
       setRoomState((prev) => ({ ...prev, conversationHistory: messages }));
 
@@ -35,12 +37,7 @@ export async function useProcessSendMessage() {
       // 過去の会話履歴と現在の入力を結合する前に、過去の会話履歴に含まれるcontent文字列のトークン数を取得
       const historyContentTokenCount = messages.reduce((prev, curr) => prev + encode(curr.content).length, 0);
 
-      setRoomState((prev) => ({
-        ...prev,
-        preSummarizedHistoryTokenCount: historyContentTokenCount, // 要約前のトークン数を記録
-        isSummarized: false, // 要約フラグをリセット
-        isDeleteHistory: false, // 履歴削除フラグをリセット
-      }));
+      let preSummarizedHistoryTokenCount = historyContentTokenCount; // 要約前のトークン数を記録
 
       // トークン関連のデフォルト値を設定
       const maxContentLength = 3072;
@@ -102,7 +99,7 @@ export async function useProcessSendMessage() {
         if (messagesToSelect > 0) {
           // 抽出したテキストを要約APIリクエストに送信
           try {
-            let summary = await GetSummaryAsync(forCompMes as string);
+            let summary = await getSummaryAsync(forCompMes as string, apiKey, model);
             summary = roomState.currentRoomName + ': ' + summary;
 
             let summaryLog = '';
@@ -115,11 +112,11 @@ export async function useProcessSendMessage() {
 
             console.log(summaryLog);
 
-            roomState.isSummarized = true; // 要約フラグを立てる
+            isSummarized = true; // 要約フラグを立てる
 
             // 返ってきた要約文でconversationHistoryを書き換える
             messages!.reverse();
-            messages!.splice(0, roomState.conversationHistory!.length - messageStart);
+            messages!.splice(0, messages!.length - messageStart);
             messages!.unshift({ role: 'assistant', content: summary });
           } catch (ex) {
             if (ex instanceof Error) {
@@ -131,7 +128,7 @@ export async function useProcessSendMessage() {
         } else {
           if (messages!.length > 0) {
             messages!.length = 0;
-            setRoomState((prev) => ({ ...prev, isDeleteHistory: true })); // 履歴削除フラグを立てる
+            isDeleteHistory = true; // 履歴削除フラグを立てる
           }
         }
       }
@@ -186,10 +183,8 @@ export async function useProcessSendMessage() {
                       comletionTokens +
                       ', total:' +
                       (promptTokens + comletionTokens) +
-                      (roomState.isSummarized ??
-                        `-Conversation history has been summarized. before: ${roomState.preSummarizedHistoryTokenCount}`) +
-                      (roomState.isDeleteHistory ??
-                        `-Conversation history has been deleted. before: ${roomState.preSummarizedHistoryTokenCount}`),
+                      (isSummarized ?? `-Conversation history has been summarized. before: ${preSummarizedHistoryTokenCount}`) +
+                      (isDeleteHistory ?? `-Conversation history has been deleted. before: ${preSummarizedHistoryTokenCount}`),
                     date: new Date(),
                   };
                   updatedMessage = newMessage; // 更新されたメッセージを保持
@@ -240,10 +235,7 @@ async function getSystemMessageItem(conversationHistory: Chat[] | null) {
 }
 
 //要約メソッド
-async function GetSummaryAsync(text: string): Promise<string> {
-  const apiKey = useUserStore<string | null>((state) => state.apiKey);
-  const model = useAppStore<string | null>((state) => state.apiModel);
-
+async function getSummaryAsync(text: string, apiKey: string, model: string): Promise<string> {
   const chat = createChat({
     apiKey: apiKey!,
     model: model!,
