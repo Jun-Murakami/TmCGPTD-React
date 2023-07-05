@@ -33,10 +33,7 @@ export async function useProcessSendMessage() {
       const inputTokenCount = encode(roomState.userInput as string).length; // 入力文字列のトークン数を取得
 
       // 過去の会話履歴と現在の入力を結合する前に、過去の会話履歴に含まれるcontent文字列のトークン数を取得
-      const historyContentTokenCount = roomState.conversationHistory!.reduce(
-        (prev, curr) => prev + encode(curr.content).length,
-        0
-      );
+      const historyContentTokenCount = messages.reduce((prev, curr) => prev + encode(curr.content).length, 0);
 
       setRoomState((prev) => ({
         ...prev,
@@ -49,7 +46,7 @@ export async function useProcessSendMessage() {
       const maxContentLength = 3072;
 
       // 履歴を逆順にして保存
-      let reversedHistoryList: Chat[] = [...roomState.conversationHistory!].reverse();
+      let reversedHistoryList: Chat[] = messages.slice().reverse();
 
       // そもそもユーザー入力が4096を超えている場合はエラー
       if (inputTokenCount > 4096) {
@@ -121,9 +118,9 @@ export async function useProcessSendMessage() {
             roomState.isSummarized = true; // 要約フラグを立てる
 
             // 返ってきた要約文でconversationHistoryを書き換える
-            roomState.conversationHistory!.reverse();
-            roomState.conversationHistory!.splice(0, roomState.conversationHistory!.length - messageStart);
-            roomState.conversationHistory!.unshift({ role: 'assistant', content: summary });
+            messages!.reverse();
+            messages!.splice(0, roomState.conversationHistory!.length - messageStart);
+            messages!.unshift({ role: 'assistant', content: summary });
           } catch (ex) {
             if (ex instanceof Error) {
               await showDialog(ex.message, 'Error');
@@ -132,8 +129,8 @@ export async function useProcessSendMessage() {
             }
           }
         } else {
-          if (roomState.conversationHistory!.length > 0) {
-            roomState.conversationHistory!.length = 0;
+          if (messages!.length > 0) {
+            messages!.length = 0;
             setRoomState((prev) => ({ ...prev, isDeleteHistory: true })); // 履歴削除フラグを立てる
           }
         }
@@ -141,13 +138,13 @@ export async function useProcessSendMessage() {
 
       if (!isNullOrWhiteSpace(roomState.systemMessage)) {
         //システムメッセージがあれば一旦全削除
-        const itemToRemove = getSystemMessageItem(roomState.conversationHistory!);
+        const itemToRemove = await getSystemMessageItem(messages);
         if (itemToRemove != null) {
-          roomState.conversationHistory!.splice(roomState.conversationHistory!.indexOf(itemToRemove), 1);
+          messages!.splice(messages!.indexOf(itemToRemove), 1);
         }
 
         // 一番先頭に再挿入
-        roomState.conversationHistory!.unshift({ role: 'system', content: roomState.systemMessage! });
+        messages!.unshift({ role: 'system', content: roomState.systemMessage! });
       }
 
       const chat = createChat({
@@ -155,12 +152,12 @@ export async function useProcessSendMessage() {
         model: model,
       });
 
-      const prompts = roomState.conversationHistory!.slice(0, -1).map((message) => {
+      const prompts = messages!.slice(0, -1).map((message) => {
         return message.content;
       });
       const promptTokens: number = encode(prompts.join()).length;
 
-      for (const message of roomState.conversationHistory!) {
+      for (const message of messages!) {
         chat.addMessage(message);
       }
 
@@ -230,12 +227,10 @@ export async function useProcessSendMessage() {
     }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomState.isNewInputAdded]);
-
-  return;
 }
 
 //システムメッセージ検索メソッド
-function getSystemMessageItem(conversationHistory: Chat[] | null) {
+async function getSystemMessageItem(conversationHistory: Chat[] | null) {
   for (let item of conversationHistory!) {
     if (item.role && item.content && item.role === 'system') {
       return item;
