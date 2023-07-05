@@ -23,7 +23,7 @@ export async function useProcessSendMessage() {
 
     const getAssistantMessage = async () => {
       // ユーザー入力以外のメッセージを取得
-      let messages = currentMessages.slice(0, -2).map((message) => {
+      let messages: Chat[] = currentMessages.slice(0, -2).map((message) => {
         return { role: message.role, content: message.text };
       });
 
