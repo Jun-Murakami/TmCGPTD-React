@@ -10,11 +10,11 @@ export interface EditableTextAreaProps {
   isEditing: boolean;
   text: string;
   isSaved: boolean;
-  id?: string;
+  id?: number;
   setText: (newText: string) => void;
 }
 
-export function TextFieldMod({ isEditing, text, isSaved, id = '', setText }: EditableTextAreaProps) {
+export function TextFieldMod({ isEditing, text, isSaved, id = undefined, setText }: EditableTextAreaProps) {
   const currentMessages = useChatStore((state) => state.currentMessages);
   const setCurrentMessages = useChatStore((state) => state.setCurrentMessages);
   const roomState = useChatStore((state) => state.roomState);
@@ -35,7 +35,7 @@ export function TextFieldMod({ isEditing, text, isSaved, id = '', setText }: Edi
     }
     if (isSaved && editableText !== text && editableText !== '') {
       setText(editableText.trim());
-      if (id !== '' && id === roomState.lastUserMessageId) {
+      if (id !== undefined && id === roomState.lastUserMessageId) {
         let newUserMessage: Message | null = null;
         let newAssitantMessage: Message | null = null;
         setCurrentMessages(
@@ -56,7 +56,7 @@ export function TextFieldMod({ isEditing, text, isSaved, id = '', setText }: Edi
           setRoomState((prev) => ({ ...prev, userInput: editableText.trim(), isNewInputAdded: true }));
         };
         fetchAndSetMessages();
-      } else if (id !== '') {
+      } else if (id !== undefined) {
         let newMessage: Message | null = null;
         const newMessages = currentMessages.map((message) => {
           if (message.id === id) {

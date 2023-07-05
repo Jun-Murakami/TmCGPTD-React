@@ -25,7 +25,7 @@ export function MainContainer() {
   useEffect(() => {
     const getChatRoomsAync = async () => {
       const rooms = await getChatRoomsDb(uuid!);
-      setRoomState((prev) => ({ ...prev, chatRooms: rooms }));
+      setRoomState((prev) => ({ ...prev, currentRoomName: '', chatRooms: rooms }));
     };
     getChatRoomsAync();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -67,7 +67,7 @@ export function MainContainer() {
   return (
     <>
       <SwipeableRoomsDrawer />
-      <Box sx={{ width: '100%', paddingTop: 8 }} display='flex' alignItems='center' justifyContent='center' zIndex={0}>
+      <Box sx={{ width: '100%', paddingTop: 8 }} display='flex' alignItems='center' justifyContent='center'>
         {roomState.isNewChat ? <NewChatPage /> : <ChatRoomPage />}
       </Box>
       <PromptInput onClick={handlePostButtonClick} />

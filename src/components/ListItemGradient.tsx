@@ -7,11 +7,11 @@ import ChatBubbleOutlineOutlinedIcon from '@mui/icons-material/ChatBubbleOutline
 import RateReviewOutlinedIcon from '@mui/icons-material/RateReviewOutlined';
 import { ChatRoom } from '../types/types';
 
-type HandleChatRoomClick = (RoomId: string) => (event: React.MouseEvent) => void;
+type HandleChatRoomClick = (roomId: number, roomName: string) => (event: React.MouseEvent) => void;
 
 type ListItemComponentProps = {
   room: ChatRoom;
-  currentRoomId: string;
+  currentRoomId: number;
   handleChatRoomClick: HandleChatRoomClick;
 };
 
@@ -23,7 +23,7 @@ export function ListItemGradient({ room, currentRoomId, handleChatRoomClick }: L
       <ListItemButton
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        onClick={handleChatRoomClick(room.id!)}
+        onClick={handleChatRoomClick(room.id!, room.roomName!)}
         sx={{ transition: 'none', paddingTop: 1, paddingBottm: 1 }}
       >
         <ListItemIcon sx={{ marginTop: -1.5, marginRight: -2 }}>
@@ -31,7 +31,7 @@ export function ListItemGradient({ room, currentRoomId, handleChatRoomClick }: L
         </ListItemIcon>
         <ListItemText
           sx={{ m: 0, width: 230, maxWidth: '90%', whiteSpace: 'nowrap', overflow: 'hidden', p: 0 }}
-          primary={room.RoomName.length > 35 ? room.RoomName.substring(0, 35) : room.RoomName}
+          primary={room.roomName.length > 35 ? room.roomName.substring(0, 35) : room.roomName}
           secondary={room.date.toLocaleDateString() + ' - ' + room.category}
           secondaryTypographyProps={{ fontSize: '0.8rem' }}
           primaryTypographyProps={{

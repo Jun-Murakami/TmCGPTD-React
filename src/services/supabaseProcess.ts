@@ -10,7 +10,7 @@ export async function getChatRoomsDb(userId: string): Promise<ChatRoom[]> {
     return data.map((chatRoom) => ({
       id: chatRoom.id,
       date: new Date(chatRoom.updated_on),
-      RoomName: chatRoom.title,
+      roomName: chatRoom.title,
       category: chatRoom.category,
       lastPrompt: chatRoom.last_prompt,
       json: chatRoom.json,
@@ -22,7 +22,7 @@ export async function getChatRoomsDb(userId: string): Promise<ChatRoom[]> {
   return [];
 }
 
-export async function getMessagesDb(userId: string, roomId: string): Promise<Message[]> {
+export async function getMessagesDb(userId: string, roomId: number): Promise<Message[]> {
   const { data, error } = await supabase
     .from('messages')
     .select('id, role, created_on, content, usage, room_id')
@@ -45,17 +45,17 @@ export async function getMessagesDb(userId: string, roomId: string): Promise<Mes
 
 export async function createChatRoomAndMessagesDb(userId: string, roomName: string, messages: Message[]) {
   console.log('createChatRoomAndMessagesDb');
-  return '';
+  return undefined;
 }
 
-export async function addMessageDb(userId: string, roomId: string, messages: Message[]) {
+export async function addMessageDb(userId: string, roomId: number, messages: Message[]) {
   console.log('addMessageDb');
 }
 
-export async function updateMessageDb(userId: string, roomId: string, message: Message) {
+export async function updateMessageDb(userId: string, roomId: number, message: Message) {
   console.log('updateMessageDb');
 }
 
-export async function updateAssistantMessageDb(userId: string, roomId: string, message: Message) {
+export async function updateAssistantMessageDb(userId: string, roomId: number, message: Message) {
   console.log('updateAssistantMessageDb');
 }

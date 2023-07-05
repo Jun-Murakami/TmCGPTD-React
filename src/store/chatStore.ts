@@ -6,14 +6,15 @@ import { Message, ChatRoom } from '../types/types';
 type RoomState = {
   isNewChat: boolean;
   chatRooms: ChatRoom[];
-  currentRoomId?: string;
+  currentRoomId?: number;
   currentRoomName?: string;
+  currentCategory?: string;
   systemMessage?: string;
-  systemMessageId?: string;
+  systemMessageId?: number;
   lastUserMessage?: string;
-  lastUserMessageId?: string;
+  lastUserMessageId?: number;
   lastAssistantMessage?: string;
-  lastAssistantMessageId?: string;
+  lastAssistantMessageId?: number;
   userInput: string;
   isNewInputAdded: boolean;
 };
@@ -23,21 +24,22 @@ export type ChatStore = {
   currentMessages: Message[];
   setRoomState: (newState: Partial<RoomState> | ((prevState: RoomState) => RoomState)) => void;
   setCurrentMessages: (messages: Message[] | ((prevMessages: Message[]) => Message[])) => void;
-  getMessages: (userId: string, roomId: string) => Promise<void>;
+  getMessages: (userId: string, roomId: number) => Promise<void>;
 };
 
 export const useChatStore = create<ChatStore>((set) => ({
   roomState: {
     isNewChat: true,
     chatRooms: [],
-    currentRoomId: '',
+    currentRoomId: undefined,
     currentRoomName: '',
+    currentCategory: '',
     systemMessage: '',
-    systemMessageId: '',
+    systemMessageId: undefined,
     lastUserMessage: '',
-    lastUserMessageId: '',
+    lastUserMessageId: undefined,
     lastAssistantMessage: '',
-    lastAssistantMessageId: '',
+    lastAssistantMessageId: undefined,
     userInput: '',
     isNewInputAdded: false,
   },

@@ -1,7 +1,7 @@
 export type ChatRoom = {
-  id?: string;
+  id?: number;
   date: Date;
-  RoomName: string;
+  roomName: string;
   category?: string;
   lastPrompt?: string;
   json?: string;
@@ -9,7 +9,7 @@ export type ChatRoom = {
 };
 
 export type Message = {
-  id?: string;
+  id?: number;
   role: 'system' | 'user' | 'assistant';
   date: Date;
   text: string;
@@ -23,7 +23,7 @@ export type EditableMessageState = {
 
 export type CurrentRoomState = {
   isNewChat: boolean;
-  roomId: string;
+  roomId: number;
   roomName: string;
   chatRooms: ChatRoom[];
   currentMessages: Message[];

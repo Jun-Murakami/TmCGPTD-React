@@ -55,9 +55,9 @@ export function SwipeableRoomsDrawer() {
 
   const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
-  const handleChatRoomClick = (RoomId: string) => () => {
+  const handleChatRoomClick = (roomId: number, roomName: string) => () => {
     if (roomState.isNewChat) setRoomState((prev) => ({ ...prev, isNewChat: false }));
-    setRoomState((prev) => ({ ...prev, currentRoomId: RoomId }));
+    setRoomState((prev) => ({ ...prev, currentRoomName: roomName, currentRoomId: roomId }));
   };
 
   const handleChangeEmail = async () => {
@@ -125,7 +125,13 @@ export function SwipeableRoomsDrawer() {
 
   const handleNewChat = async () => {
     if (!roomState.isNewChat) {
-      setRoomState((prev) => ({ ...prev, isNewChat: true, currentRoomId: '', currentRoomName: '', userInput: '' }));
+      setRoomState((prev) => ({
+        ...prev,
+        isNewChat: true,
+        currentRoomId: undefined,
+        currentRoomName: '',
+        userInput: '',
+      }));
       setInputText('');
     }
   };
