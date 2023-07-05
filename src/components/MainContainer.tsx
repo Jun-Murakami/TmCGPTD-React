@@ -8,7 +8,7 @@ import { SwipeableRoomsDrawer } from '../components/SwipeableRoomsDrawer';
 import { PromptInput } from './PromptInput';
 import { ChatRoomPage } from './ChatRoomPage';
 import { NewChatPage } from './NewChatPage';
-import { createChatRoomAndMessagesDb, getChatRoomsDb, addMessageDb, getMessagesDb } from '../services/supabaseProcess';
+import { createChatRoomAndMessagesDb, getChatRoomsDb, addMessageDb, getMessagesDb } from '../services/supabaseDb';
 import { Message } from '../types/types';
 
 export function MainContainer() {

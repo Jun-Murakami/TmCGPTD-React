@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { produce } from 'immer';
-import { getMessagesDb } from '../services/supabaseProcess';
+import { getMessagesDb } from '../services/supabaseDb';
 import { Message, ChatRoom } from '../types/types';
 
 type RoomState = {
