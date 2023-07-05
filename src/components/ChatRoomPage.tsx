@@ -1,7 +1,5 @@
 // src/ChatRoom.tsx
 import { useEffect } from 'react';
-import { createChat } from 'completions';
-import { encode } from 'gpt-tokenizer';
 import { Box, Card, Divider, Stack, Avatar, Typography } from '@mui/material';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import ReactMarkdown from 'react-markdown';
@@ -12,6 +10,7 @@ import { useUserMessage } from '../hooks/useUserMessage';
 import { useUserStore } from '../store/userStore';
 import { useChatStore } from '../store/chatStore';
 import { useAppStore } from '../store/appStore';
+import { useProcessSendMessage } from '../hooks/useProcessSendMessage';
 import { useDialogStore } from '../store/dialogStore';
 import { AiIcon } from '../components/AiIcon';
 import { CodeBlock } from '../components/CodeBlock';
@@ -27,96 +26,15 @@ export function ChatRoomPage() {
   const uuid = useUserStore<string | null>((state) => state.uuid);
   const showDialog = useDialogStore((state) => state.showDialog);
 
+  //システムメッセージの監視と更新-----------------------------------------------
   const { systemMessageState, handleSystemEdit, handleSystemSaved, handleSystemCancel } = useSystemMessage();
+
+  //ユーザーメッセージの監視と更新-----------------------------------------------
   const { userMessageState, handleUserEdit, handleUserSaved, handleUserCancel } = useUserMessage();
 
   //アシスタントメッセージの監視と更新-----------------------------------------------
-  const apiKey = useUserStore<string | null>((state) => state.apiKey);
-  const model = useAppStore<string | null>((state) => state.apiModel);
 
-  useEffect(() => {
-    if (!roomState.isNewInputAdded || !apiKey || !model || roomState.userInput === '') return;
-
-    const getAssistantMessage = async () => {
-      const chat = createChat({
-        apiKey: apiKey,
-        model: model,
-      });
-
-      const prompts = currentMessages.slice(0, -1).map((message) => {
-        return message.text;
-      });
-      const promptTokens = encode(prompts.join()).length;
-
-      const messages = currentMessages.slice(0, -2).map((message) => {
-        return { role: message.role, content: message.text };
-      });
-      for (const message of messages) {
-        chat.addMessage(message);
-      }
-
-      let updatedMessage: Message | null = null; // 更新されたメッセージを保持する変数
-
-      try {
-        await chat.sendMessage(roomState.userInput, (message) => {
-          if (message.message?.choices === undefined) return;
-          if (message.message?.choices[0].delta === undefined) return;
-
-          const delta = message.message.choices[0].delta;
-          if ('content' in delta) {
-            const content = delta.content;
-            setCurrentMessages((currentMessages) => {
-              const newMessages = currentMessages.map((message: Message) => {
-                if (message.id === roomState.lastAssistantMessageId) {
-                  const newAssistantText = message.text + content;
-                  const comletionTokens = encode(newAssistantText).length;
-                  const newMessage = {
-                    ...message,
-                    text: newAssistantText,
-                    usage:
-                      '[tokens] prompt:' +
-                      promptTokens +
-                      ', completion:' +
-                      comletionTokens +
-                      ', total:' +
-                      (promptTokens + comletionTokens),
-                    date: new Date(),
-                  };
-                  updatedMessage = newMessage; // 更新されたメッセージを保持
-                  return newMessage;
-                } else {
-                  return message;
-                }
-              });
-              return newMessages;
-            });
-          } else if ('role' in delta) {
-          } else if (message.message.choices[0].finish_reason !== 'stop') {
-            throw new Error('Unexpected message');
-          }
-        });
-      } catch (ex) {
-        if (ex instanceof Error) {
-          await showDialog(ex.message, 'Error');
-        } else {
-          await showDialog('An unknown error occurred.', 'Error');
-        }
-      }
-
-      // sendMessageが完了した後にデータベースを更新
-      if (updatedMessage) {
-        await updateAssistantMessageDb(roomState.currentRoomId!, updatedMessage);
-      }
-    };
-    getAssistantMessage();
-
-    setRoomState((prevState) => ({
-      ...prevState,
-      isNewInputAdded: false,
-      userInput: '',
-    }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roomState.isNewInputAdded]);
+  const {} = useProcessSendMessage();
 
   //currentRoomIdが変更されたら、currentMessagesを更新-----------------------------------------------
   useEffect(() => {
@@ -231,7 +149,7 @@ export function ChatRoomPage() {
                       onEdit={handleUserEdit}
                       onSave={handleUserSaved}
                       onCancel={handleUserCancel}
-                      marginTop={0}
+                      marginTop={-1}
                     />
                   )}
                 </>

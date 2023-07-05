@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { produce } from 'immer';
 import { getMessagesDb } from '../services/supabaseDb';
-import { Message, ChatRoom } from '../types/types';
+import { Message, ChatRoom, Chat } from '../types/types';
 
 type RoomState = {
   isNewChat: boolean;
@@ -15,8 +15,13 @@ type RoomState = {
   lastUserMessageId?: number;
   lastAssistantMessage?: string;
   lastAssistantMessageId?: number;
+  conversationHistory?: Chat[];
+  postedConversationHistory?: Chat[];
   userInput: string;
   isNewInputAdded: boolean;
+  preSummarizedHistoryTokenCount: number;
+  isSummarized: boolean;
+  isDeleteHistory: boolean;
 };
 
 export type ChatStore = {
@@ -40,8 +45,13 @@ export const useChatStore = create<ChatStore>((set) => ({
     lastUserMessageId: undefined,
     lastAssistantMessage: '',
     lastAssistantMessageId: undefined,
+    conversationHistory: [],
+    postedConversationHistory: [],
     userInput: '',
     isNewInputAdded: false,
+    preSummarizedHistoryTokenCount: 0,
+    isSummarized: false,
+    isDeleteHistory: false,
   },
   currentMessages: [],
   setRoomState: (newState) =>

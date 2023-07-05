@@ -25,9 +25,11 @@ export function NewChatPage() {
     <Stack sx={{ p: 1, width: '100%', paddingBottom: 10 }} spacing={2} maxWidth={900} minWidth={260} zIndex={0}>
       <TextField
         required
-        id='outlined-required'
-        label='Chat title (Required)'
+        id='outlined'
+        label='Chat title (Optional)'
         placeholder='New chat'
+        name='Chat title'
+        autoComplete='off'
         value={roomName}
         onChange={(e) => setRoomState((prev) => ({ ...prev, currentRoomName: e.target.value }))}
         sx={{ width: '95%', margin: 'auto', zIndex: 0 }}

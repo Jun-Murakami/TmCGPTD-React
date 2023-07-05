@@ -25,6 +25,10 @@ export const theme = createTheme({
         .markdownBody{
           line-height: 1.44;
         },
+        .markdownBody img{
+          margin : 0;
+          width: 100%;
+        },
         .markdownBody pre{
           margin : 0;
           font-size: 14px;

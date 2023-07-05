@@ -1,5 +1,19 @@
 {
   "projects": {
     "default": "tmcgptd-react"
+  },
+  "targets": {
+    "tmcgptd-react": {
+      "hosting": {
+        "app": [
+          "tmcgptd"
+        ]
+      }
+    }
+  },
+  "etags": {},
+  "hosting": {
+    "site": "tmcgptd",
+    "public": "public"
   }
 }

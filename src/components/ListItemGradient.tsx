@@ -5,9 +5,16 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ChatBubbleOutlineOutlinedIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
 import RateReviewOutlinedIcon from '@mui/icons-material/RateReviewOutlined';
-import { ChatRoom } from '../types/types';
+import { ChatRoom, Chat } from '../types/types';
 
-type HandleChatRoomClick = (roomId: number, roomName: string) => (event: React.MouseEvent) => void;
+type HandleChatRoomClick = (
+  roomId: number,
+  roomName: string,
+  category: string,
+  lastPrompt: string,
+  json: Chat,
+  jsonprev: Chat
+) => (event: React.MouseEvent) => void;
 
 type ListItemComponentProps = {
   room: ChatRoom;
@@ -23,7 +30,7 @@ export function ListItemGradient({ room, currentRoomId, handleChatRoomClick }: L
       <ListItemButton
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        onClick={handleChatRoomClick(room.id!, room.roomName!)}
+        onClick={handleChatRoomClick(room.id!, room.roomName!, room.category!, room.lastPrompt!, room.json!, room.jsonprev!)}
         sx={{ transition: 'none', paddingTop: 1, paddingBottm: 1 }}
       >
         <ListItemIcon sx={{ marginTop: -1.5, marginRight: -2 }}>

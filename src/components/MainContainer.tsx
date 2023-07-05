@@ -34,9 +34,9 @@ export function MainContainer() {
   const handlePostButtonClick = async () => {
     if (roomState.isNewChat && inputText.length > 0 && roomState.currentRoomName!.length > 0) {
       const messages: Message[] = [
-        { role: 'system', date: new Date(), text: roomState.systemMessage! },
-        { role: 'user', date: new Date(), text: inputText },
-        { role: 'assistant', date: new Date(), text: '' },
+        { role: 'system', date: new Date(), text: roomState.systemMessage!, usage: '' },
+        { role: 'user', date: new Date(), text: inputText, usage: '' },
+        { role: 'assistant', date: new Date(), text: '', usage: '' },
       ];
       const newRoomId = await createChatRoomAndMessagesDb(roomState.currentRoomName!, messages);
       const newRooms = await getChatRoomsDb(uuid!);
@@ -50,8 +50,8 @@ export function MainContainer() {
       setInputText('');
     } else if (!roomState.isNewChat && inputText.length > 0) {
       const messages: Message[] = [
-        { role: 'user', date: new Date(), text: inputText },
-        { role: 'assistant', date: new Date(), text: '' },
+        { role: 'user', date: new Date(), text: inputText, usage: '' },
+        { role: 'assistant', date: new Date(), text: '', usage: '' },
       ];
       await addMessageDb(roomState.currentRoomId!, messages);
       await getMessagesDb(roomState.currentRoomId!).then(setCurrentMessages);

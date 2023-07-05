@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { TextField, Typography } from '@mui/material';
 import { Message } from '../types/types';
 import { useChatStore } from '../store/chatStore';
-import { useUserStore } from '../store/userStore';
 import { updateMessageDb } from '../services/supabaseDb';
 import { useWrapUrlsInSpan } from '../hooks/useWrapUrlsInSpan';
 
@@ -82,7 +81,6 @@ export function TextFieldMod({ isEditing, text, isSaved, id = undefined, setText
           multiline
           id='standard-multiline'
           variant='standard'
-          rows={8}
           sx={{ marginTop: -0.5, width: '100%', minHeight: 100 }}
           value={editableText}
           onChange={handleChange}

@@ -4,16 +4,16 @@ export type ChatRoom = {
   roomName: string;
   category?: string;
   lastPrompt?: string;
-  json?: string;
-  jsonprev?: string;
+  json?: Chat;
+  jsonprev?: Chat;
 };
 
 export type Message = {
   id?: number;
-  role: 'system' | 'user' | 'assistant';
+  role: 'function' | 'assistant' | 'system' | 'user';
   date: Date;
   text: string;
-  usage?: string;
+  usage: string;
 };
 
 export type EditableMessageState = {
@@ -29,4 +29,9 @@ export type CurrentRoomState = {
   currentMessages: Message[];
   userInput: string;
   isNewInputAdded: boolean;
+};
+
+export type Chat = {
+  role: 'function' | 'assistant' | 'system' | 'user';
+  content: string;
 };

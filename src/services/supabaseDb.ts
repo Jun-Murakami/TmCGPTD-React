@@ -29,7 +29,7 @@ export async function getMessagesDb(roomId: number): Promise<Message[]> {
     .eq('room_id', roomId)
     .order('id', { ascending: true });
   if (data) {
-    console.log('getMessagesDb', data);
+    //console.log('getMessagesDb', data);
     return data.map((message) => ({
       id: message.id,
       role: message.role,
@@ -43,7 +43,7 @@ export async function getMessagesDb(roomId: number): Promise<Message[]> {
   return [];
 }
 
-export async function createChatRoomAndMessagesDb(roomName: string, messages: Message[]) {
+export async function createChatRoomAndMessagesDb(roomName: string = '', messages: Message[]) {
   console.log('createChatRoomAndMessagesDb');
   return undefined;
 }
