@@ -5,7 +5,7 @@ import { encode } from 'gpt-tokenizer';
 import { Box, Card, Divider, Stack, Avatar, Typography } from '@mui/material';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import ReactMarkdown from 'react-markdown';
-import { getMessagesDb, updateAssistantMessageDb } from '../services/supabaseDb';
+import { getMessagesDb, updateAssistantMessageDb } from '../services/supabaseProcess';
 import { Message } from '../types/types';
 import { useSystemMessage } from '../hooks/useSystemMessage';
 import { useUserMessage } from '../hooks/useUserMessage';
