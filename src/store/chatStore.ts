@@ -24,7 +24,7 @@ export type ChatStore = {
   currentMessages: Message[];
   setRoomState: (newState: Partial<RoomState> | ((prevState: RoomState) => RoomState)) => void;
   setCurrentMessages: (messages: Message[] | ((prevMessages: Message[]) => Message[])) => void;
-  getMessages: (userId: string, roomId: number) => Promise<void>;
+  getMessages: (roomId: number) => Promise<void>;
 };
 
 export const useChatStore = create<ChatStore>((set) => ({
@@ -64,8 +64,8 @@ export const useChatStore = create<ChatStore>((set) => ({
         }
       })
     ),
-  getMessages: async (userId, roomId) => {
-    const messages = await getMessagesDb(userId, roomId);
+  getMessages: async (roomId) => {
+    const messages = await getMessagesDb(roomId);
     set((state) =>
       produce(state, (draftState) => {
         draftState.currentMessages = messages;

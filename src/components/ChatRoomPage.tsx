@@ -105,7 +105,7 @@ export function ChatRoomPage() {
 
       // sendMessageが完了した後にデータベースを更新
       if (updatedMessage) {
-        await updateAssistantMessageDb(uuid!, roomState.currentRoomId!, updatedMessage);
+        await updateAssistantMessageDb(roomState.currentRoomId!, updatedMessage);
       }
     };
     getAssistantMessage();
@@ -122,7 +122,7 @@ export function ChatRoomPage() {
   useEffect(() => {
     if (!uuid || !roomState.currentRoomId) return;
     const getMessageAsync = async () => {
-      await getMessagesDb(uuid, roomState.currentRoomId!).then(setCurrentMessages);
+      await getMessagesDb(roomState.currentRoomId!).then(setCurrentMessages);
       if (roomState.userInput !== '') {
         setRoomState((prevState) => ({
           ...prevState,
@@ -231,7 +231,7 @@ export function ChatRoomPage() {
                       onEdit={handleUserEdit}
                       onSave={handleUserSaved}
                       onCancel={handleUserCancel}
-                      marginTop={2}
+                      marginTop={0}
                     />
                   )}
                 </>
@@ -241,18 +241,30 @@ export function ChatRoomPage() {
               <Stack sx={{ pl: 5 }} marginTop={-6.1} width={'100%'}>
                 {message.role === 'user' ? (
                   <Box marginTop={2.7} sx={{ width: '100%' }}>
-                    <TextFieldMod
-                      isSaved={userMessageState.isTextSaved}
-                      isEditing={userMessageState.isTextEditing}
-                      text={message.id === roomState.lastUserMessageId ? roomState.lastUserMessage! : message.text!}
-                      id={message.id!}
-                      setText={(newText) =>
-                        setRoomState((prevState) => ({
-                          ...prevState,
-                          lastUserMessage: newText,
-                        }))
-                      }
-                    />
+                    {message.id === roomState.lastUserMessageId ? (
+                      <TextFieldMod
+                        isSaved={userMessageState.isTextSaved}
+                        isEditing={userMessageState.isTextEditing}
+                        text={roomState.lastUserMessage!}
+                        id={message.id!}
+                        setText={(newText) =>
+                          setRoomState((prevState) => ({
+                            ...prevState,
+                            lastUserMessage: newText,
+                          }))
+                        }
+                      />
+                    ) : (
+                      <Typography
+                        lineHeight={1.44}
+                        sx={{
+                          width: '100%',
+                          whiteSpace: 'pre-wrap',
+                        }}
+                      >
+                        {message.text}
+                      </Typography>
+                    )}
                   </Box>
                 ) : (
                   makeMarkedHtml(message.text)

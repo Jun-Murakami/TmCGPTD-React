@@ -38,7 +38,7 @@ export function MainContainer() {
         { role: 'user', date: new Date(), text: inputText },
         { role: 'assistant', date: new Date(), text: '' },
       ];
-      const newRoomId = await createChatRoomAndMessagesDb(uuid!, roomState.currentRoomName!, messages);
+      const newRoomId = await createChatRoomAndMessagesDb(roomState.currentRoomName!, messages);
       const newRooms = await getChatRoomsDb(uuid!);
       setRoomState((prev) => ({
         ...prev,
@@ -53,8 +53,8 @@ export function MainContainer() {
         { role: 'user', date: new Date(), text: inputText },
         { role: 'assistant', date: new Date(), text: '' },
       ];
-      await addMessageDb(uuid!, roomState.currentRoomId!, messages);
-      await getMessagesDb(uuid!, roomState.currentRoomId!).then(setCurrentMessages);
+      await addMessageDb(roomState.currentRoomId!, messages);
+      await getMessagesDb(roomState.currentRoomId!).then(setCurrentMessages);
       setRoomState((prev) => ({ ...prev, isNewInputAdded: true, userInput: inputText }));
       setInputText('');
     } else if ((roomState.isNewChat && apiKey === null) || apiKey === '') {

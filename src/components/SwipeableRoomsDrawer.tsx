@@ -4,6 +4,7 @@ import { useChatStore } from '../store/chatStore';
 import { useUserStore } from '../store/userStore';
 import { supabase } from '../hooks/useSupabaseSession';
 import { useDialogStore, useInputDialogStore } from '../store/dialogStore';
+import { styled } from '@mui/material/styles';
 import {
   Box,
   FormControl,
@@ -20,12 +21,10 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material';
-import { styled } from '@mui/material/styles';
 import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
 import MuiAccordion, { AccordionProps } from '@mui/material/Accordion';
 import MuiAccordionSummary, { AccordionSummaryProps } from '@mui/material/AccordionSummary';
 import MuiAccordionDetails from '@mui/material/AccordionDetails';
-import { ListItemGradient } from './ListItemGradient';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ReviewsOutlinedIcon from '@mui/icons-material/ReviewsOutlined';
 import PersonOffIcon from '@mui/icons-material/PersonOff';
@@ -34,6 +33,7 @@ import PasswordIcon from '@mui/icons-material/Password';
 import KeyIcon from '@mui/icons-material/Key';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { AiIcon } from '../components/AiIcon';
+import { ListItemGradient } from './ListItemGradient';
 import { SearchAppBar } from './AppBar';
 import AES from 'crypto-js/aes';
 

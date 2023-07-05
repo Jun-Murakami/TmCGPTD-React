@@ -3,7 +3,7 @@ import { TextField, Typography } from '@mui/material';
 import { Message } from '../types/types';
 import { useChatStore } from '../store/chatStore';
 import { useUserStore } from '../store/userStore';
-import { updateMessageDb } from '../services/supabaseProcess';
+import { updateMessageDb } from '../services/supabaseDb';
 import { useWrapUrlsInSpan } from '../hooks/useWrapUrlsInSpan';
 
 export interface EditableTextAreaProps {
@@ -19,7 +19,6 @@ export function TextFieldMod({ isEditing, text, isSaved, id = undefined, setText
   const setCurrentMessages = useChatStore((state) => state.setCurrentMessages);
   const roomState = useChatStore((state) => state.roomState);
   const setRoomState = useChatStore((state) => state.setRoomState);
-  const uuid = useUserStore<string | null>((state) => state.uuid);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setEditableText(event.target.value);
@@ -52,7 +51,7 @@ export function TextFieldMod({ isEditing, text, isSaved, id = undefined, setText
           })
         );
         const fetchAndSetMessages = async () => {
-          await updateMessageDb(uuid!, roomState.currentRoomId!, newUserMessage!);
+          await updateMessageDb(roomState.currentRoomId!, newUserMessage!);
           setRoomState((prev) => ({ ...prev, userInput: editableText.trim(), isNewInputAdded: true }));
         };
         fetchAndSetMessages();
@@ -67,7 +66,7 @@ export function TextFieldMod({ isEditing, text, isSaved, id = undefined, setText
           }
         });
         const fetchAndSetMessages = async () => {
-          await updateMessageDb(uuid!, roomState.currentRoomId!, newMessage!);
+          await updateMessageDb(roomState.currentRoomId!, newMessage!);
           setCurrentMessages(newMessages);
         };
         fetchAndSetMessages();
@@ -83,6 +82,7 @@ export function TextFieldMod({ isEditing, text, isSaved, id = undefined, setText
           multiline
           id='standard-multiline'
           variant='standard'
+          rows={8}
           sx={{ marginTop: -0.5, width: '100%', minHeight: 100 }}
           value={editableText}
           onChange={handleChange}

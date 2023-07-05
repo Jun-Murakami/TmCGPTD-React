@@ -22,7 +22,7 @@ export async function getChatRoomsDb(userId: string): Promise<ChatRoom[]> {
   return [];
 }
 
-export async function getMessagesDb(userId: string, roomId: number): Promise<Message[]> {
+export async function getMessagesDb(roomId: number): Promise<Message[]> {
   const { data, error } = await supabase
     .from('messages')
     .select('id, role, created_on, content, usage, room_id')
@@ -43,19 +43,19 @@ export async function getMessagesDb(userId: string, roomId: number): Promise<Mes
   return [];
 }
 
-export async function createChatRoomAndMessagesDb(userId: string, roomName: string, messages: Message[]) {
+export async function createChatRoomAndMessagesDb(roomName: string, messages: Message[]) {
   console.log('createChatRoomAndMessagesDb');
   return undefined;
 }
 
-export async function addMessageDb(userId: string, roomId: number, messages: Message[]) {
+export async function addMessageDb(roomId: number, messages: Message[]) {
   console.log('addMessageDb');
 }
 
-export async function updateMessageDb(userId: string, roomId: number, message: Message) {
+export async function updateMessageDb(roomId: number, message: Message) {
   console.log('updateMessageDb');
 }
 
-export async function updateAssistantMessageDb(userId: string, roomId: number, message: Message) {
+export async function updateAssistantMessageDb(roomId: number, message: Message) {
   console.log('updateAssistantMessageDb');
 }
