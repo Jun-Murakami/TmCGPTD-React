@@ -3,7 +3,7 @@ import { TextField, Typography } from '@mui/material';
 import { Message } from '../types/types';
 import { useChatStore } from '../store/chatStore';
 import { useUserStore } from '../store/userStore';
-import { updateMessageDb } from '../services/supabaseProcess';
+import { updateMessageDb } from '../services/supabaseDb';
 import { useWrapUrlsInSpan } from '../hooks/useWrapUrlsInSpan';
 
 export interface EditableTextAreaProps {
