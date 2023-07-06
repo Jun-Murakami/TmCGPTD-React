@@ -67,7 +67,7 @@ export function MainContainer() {
           await showDialog('An unknown error occurred.', 'Error');
         }
       }
-      // 既存チャットの場合
+      // 既存ルームへの送信の場合
     } else if (!roomState.isNewChat && inputText.length > 0) {
       try {
         const messages: Message[] = [
@@ -88,8 +88,6 @@ export function MainContainer() {
       }
     } else if (roomState.isNewChat && (apiKey === null || apiKey === '' || apiKey === undefined)) {
       await showDialog('Please enter api key.', 'Information');
-    } else if (roomState.isNewChat && roomState.currentRoomName! === '') {
-      await showDialog('Please enter a chat title.', 'Information');
     }
   };
 

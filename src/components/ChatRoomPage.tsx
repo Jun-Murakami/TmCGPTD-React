@@ -31,7 +31,7 @@ export function ChatRoomPage() {
   //ユーザーメッセージの監視と更新-----------------------------------------------
   const { userMessageState, handleUserEdit, handleUserSaved, handleUserCancel } = useUserMessage();
 
-  //アシスタントメッセージの監視と更新-----------------------------------------------
+  //チャットメインロジック-----------------------------------------------
   useProcessSendMessage();
 
   //currentRoomIdが変更されたら、chatRoom詳細を取得してcurrentMessagesを更新-----------------------------------------------
