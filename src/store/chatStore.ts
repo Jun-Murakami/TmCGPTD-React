@@ -16,12 +16,8 @@ type RoomState = {
   lastAssistantMessage?: string;
   lastAssistantMessageId?: number;
   conversationHistory?: Chat[];
-  postedConversationHistory?: Chat[];
   userInput: string;
   isNewInputAdded: boolean;
-  preSummarizedHistoryTokenCount: number;
-  isSummarized: boolean;
-  isDeleteHistory: boolean;
 };
 
 export type ChatStore = {
@@ -46,12 +42,8 @@ export const useChatStore = create<ChatStore>((set) => ({
     lastAssistantMessage: '',
     lastAssistantMessageId: undefined,
     conversationHistory: [],
-    postedConversationHistory: [],
     userInput: '',
     isNewInputAdded: false,
-    preSummarizedHistoryTokenCount: 0,
-    isSummarized: false,
-    isDeleteHistory: false,
   },
   currentMessages: [],
   setRoomState: (newState) =>

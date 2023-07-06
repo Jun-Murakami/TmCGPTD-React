@@ -11,6 +11,7 @@ export function NewChatPage() {
 
   const roomName = useChatStore((state) => state.roomState.currentRoomName!);
   const systemMessage = useChatStore((state) => state.roomState.systemMessage!);
+  const setCurrentMessages = useChatStore((state) => state.setCurrentMessages);
   const setRoomState = useChatStore((state) => state.setRoomState);
 
   useEffect(() => {
@@ -18,6 +19,7 @@ export function NewChatPage() {
       ...prev,
       systemMessage: `あなたはOpenAIによってトレーニングされた大規模言語モデルのChatGPTです。ユーザーの指示をStep by Stepで注意深く思考し、Markdownで回答して下さい。`,
     }));
+    setCurrentMessages([]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

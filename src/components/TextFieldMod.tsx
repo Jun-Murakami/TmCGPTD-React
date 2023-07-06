@@ -39,10 +39,10 @@ export function TextFieldMod({ isEditing, text, isSaved, id = undefined, setText
         setCurrentMessages(
           currentMessages.map((message) => {
             if (message.id === roomState.lastAssistantMessageId) {
-              newAssitantMessage = { ...message, text: '' };
+              newAssitantMessage = { ...message, content: '' };
               return newAssitantMessage;
             } else if (message.id === id) {
-              newUserMessage = { ...message, text: editableText, date: new Date() };
+              newUserMessage = { ...message, content: editableText, date: new Date() };
               return newUserMessage;
             } else {
               return message;
@@ -58,7 +58,7 @@ export function TextFieldMod({ isEditing, text, isSaved, id = undefined, setText
         let newMessage: Message | null = null;
         const newMessages = currentMessages.map((message) => {
           if (message.id === id) {
-            newMessage = { ...message, text: editableText };
+            newMessage = { ...message, content: editableText };
             return newMessage;
           } else {
             return message;

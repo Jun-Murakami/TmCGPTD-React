@@ -2,14 +2,14 @@ import { useEffect } from 'react';
 import { createChat } from 'completions';
 import { encode } from 'gpt-tokenizer';
 import { Message } from '../types/types';
-import { getMessagesDb, updateAssistantMessageDb } from '../services/supabaseDb';
+import { updateAssistantMessageDb } from '../services/supabaseDb';
 import { useDialogStore } from '../store/dialogStore';
 import { useChatStore } from '../store/chatStore';
 import { useAppStore } from '../store/appStore';
 import { useUserStore } from '../store/userStore';
 import { Chat } from '../types/types';
 
-export async function useProcessSendMessage() {
+export function useProcessSendMessage() {
   const currentMessages = useChatStore<Message[]>((state) => state.currentMessages);
   const setCurrentMessages = useChatStore((state) => state.setCurrentMessages);
   const apiKey = useUserStore<string | null>((state) => state.apiKey);
@@ -24,13 +24,12 @@ export async function useProcessSendMessage() {
     const getAssistantMessage = async () => {
       // ユーザー入力以外のメッセージを取得
       let messages: Chat[] = currentMessages.slice(0, -2).map((message) => {
-        return { role: message.role, content: message.text };
+        return { role: message.role, content: message.content };
       });
 
       let isSummarized: boolean = false; // 要約フラグをリセット
       let isDeleteHistory: boolean = false; // 履歴削除フラグをリセット
-      //会話履歴にセット
-      setRoomState((prev) => ({ ...prev, conversationHistory: messages }));
+      let processedMessages: Chat[] = []; // 処理済みのメッセージを格納する配列
 
       const inputTokenCount = encode(roomState.userInput as string).length; // 入力文字列のトークン数を取得
 
@@ -39,7 +38,7 @@ export async function useProcessSendMessage() {
 
       let preSummarizedHistoryTokenCount = historyContentTokenCount; // 要約前のトークン数を記録
 
-      // トークン関連のデフォルト値を設定
+      // 履歴のトークン制限デフォルト値を設定
       const maxContentLength = 3072;
 
       // 履歴を逆順にして保存
@@ -99,13 +98,13 @@ export async function useProcessSendMessage() {
         if (messagesToSelect > 0) {
           // 抽出したテキストを要約APIリクエストに送信
           try {
-            let summary = await getSummaryAsync(forCompMes as string, apiKey, model);
+            let summary = await getSummaryAsync(forCompMes as string, apiKey, 'gpt-3.5-turbo');
             summary = roomState.currentRoomName + ': ' + summary;
 
             let summaryLog = '';
 
             if (messageStart > 0) {
-              summaryLog += `${messageStart} latest message(s) \n\n ${summary}`;
+              summaryLog += `${messageStart} latest message(s) +\n\n ${summary}`;
             } else {
               summaryLog = summary;
             }
@@ -115,19 +114,21 @@ export async function useProcessSendMessage() {
             isSummarized = true; // 要約フラグを立てる
 
             // 返ってきた要約文でconversationHistoryを書き換える
-            messages!.reverse();
-            messages!.splice(0, messages!.length - messageStart);
-            messages!.unshift({ role: 'assistant', content: summary });
+            let reversedMessages = messages!.slice().reverse();
+            reversedMessages!.splice(0, reversedMessages!.length - messageStart);
+            processedMessages = reversedMessages!.slice().reverse();
+            processedMessages!.unshift({ role: 'assistant', content: summary });
           } catch (ex) {
             if (ex instanceof Error) {
-              await showDialog(ex.message, 'Error');
+              //await showDialog(ex.message, 'Error');
+              throw ex;
             } else {
               await showDialog('An unknown error occurred.', 'Error');
             }
           }
         } else {
           if (messages!.length > 0) {
-            messages!.length = 0;
+            processedMessages = [];
             isDeleteHistory = true; // 履歴削除フラグを立てる
           }
         }
@@ -135,13 +136,13 @@ export async function useProcessSendMessage() {
 
       if (!isNullOrWhiteSpace(roomState.systemMessage)) {
         //システムメッセージがあれば一旦全削除
-        const itemToRemove = await getSystemMessageItem(messages);
+        const itemToRemove = await getSystemMessageItem(processedMessages);
         if (itemToRemove != null) {
-          messages!.splice(messages!.indexOf(itemToRemove), 1);
+          processedMessages!.splice(processedMessages!.indexOf(itemToRemove), 1);
         }
 
         // 一番先頭に再挿入
-        messages!.unshift({ role: 'system', content: roomState.systemMessage! });
+        processedMessages!.unshift({ role: 'system', content: roomState.systemMessage! });
       }
 
       const chat = createChat({
@@ -149,33 +150,34 @@ export async function useProcessSendMessage() {
         model: model,
       });
 
-      const prompts = messages!.slice(0, -1).map((message) => {
+      //最終的なプロンプトトークン数をカウント
+      const prompts = processedMessages!.map((message) => {
         return message.content;
       });
       const promptTokens: number = encode(prompts.join()).length;
 
-      for (const message of messages!) {
+      for (const message of processedMessages!) {
         chat.addMessage(message);
       }
 
       let updatedMessage: Message | null = null; // 更新されたメッセージを保持する変数
 
       try {
-        await chat.sendMessage(roomState.userInput, (message) => {
-          if (message.message?.choices === undefined) return;
-          if (message.message?.choices[0].delta === undefined) return;
+        await chat.sendMessage(roomState.userInput, (response) => {
+          if (response.message?.choices === undefined) return;
+          if (response.message?.choices[0].delta === undefined) return;
 
-          const delta = message.message.choices[0].delta;
+          const delta = response.message.choices[0].delta;
           if ('content' in delta) {
             const content = delta.content;
             setCurrentMessages((currentMessages) => {
               const newMessages = currentMessages.map((message: Message) => {
                 if (message.id === roomState.lastAssistantMessageId) {
-                  const newAssistantText = message.text + content;
+                  const newAssistantText = message.content + content;
                   const comletionTokens: number = encode(newAssistantText).length;
                   const newMessage = {
                     ...message,
-                    text: newAssistantText,
+                    content: newAssistantText,
                     usage:
                       '[tokens] prompt:' +
                       promptTokens +
@@ -183,8 +185,12 @@ export async function useProcessSendMessage() {
                       comletionTokens +
                       ', total:' +
                       (promptTokens + comletionTokens) +
-                      (isSummarized ?? `-Conversation history has been summarized. before: ${preSummarizedHistoryTokenCount}`) +
-                      (isDeleteHistory ?? `-Conversation history has been deleted. before: ${preSummarizedHistoryTokenCount}`),
+                      (isSummarized
+                        ? `\n-Conversation history has been summarized. before: ${preSummarizedHistoryTokenCount}`
+                        : ``) +
+                      (isDeleteHistory
+                        ? `\n-Conversation history has been deleted. before: ${preSummarizedHistoryTokenCount}`
+                        : ``),
                     date: new Date(),
                   };
                   updatedMessage = newMessage; // 更新されたメッセージを保持
@@ -196,7 +202,7 @@ export async function useProcessSendMessage() {
               return newMessages;
             });
           } else if ('role' in delta) {
-          } else if (message.message.choices[0].finish_reason !== 'stop') {
+          } else if (response.message.choices[0].finish_reason !== 'stop') {
             throw new Error('Unexpected message');
           }
         });
@@ -210,7 +216,23 @@ export async function useProcessSendMessage() {
 
       // sendMessageが完了した後にデータベースを更新
       if (updatedMessage) {
-        await updateAssistantMessageDb(roomState.currentRoomId!, updatedMessage);
+        try {
+          await updateAssistantMessageDb(roomState.currentRoomId!, roomState.lastAssistantMessageId!, updatedMessage);
+          if (isNullOrWhiteSpace(roomState.currentRoomName!)) {
+          }
+          //processedMessagesにuserInputを追加
+          processedMessages!.push(
+            { role: 'user', content: roomState.userInput! },
+            { role: 'assistant', content: updatedMessage.content }
+          );
+          setRoomState((prev) => ({ ...prev, conversationHistory: processedMessages })); //会話履歴にセット
+        } catch (ex) {
+          if (ex instanceof Error) {
+            await showDialog(ex.message, 'Error');
+          } else {
+            await showDialog('An unknown error occurred.', 'Error');
+          }
+        }
       }
     };
     getAssistantMessage();
@@ -224,7 +246,7 @@ export async function useProcessSendMessage() {
   }, [roomState.isNewInputAdded]);
 }
 
-//システムメッセージ検索メソッド
+//システムメッセージ検索関数
 async function getSystemMessageItem(conversationHistory: Chat[] | null) {
   for (let item of conversationHistory!) {
     if (item.role && item.content && item.role === 'system') {
@@ -234,7 +256,7 @@ async function getSystemMessageItem(conversationHistory: Chat[] | null) {
   return null;
 }
 
-//要約メソッド
+//要約関数
 async function getSummaryAsync(text: string, apiKey: string, model: string): Promise<string> {
   const chat = createChat({
     apiKey: apiKey!,
@@ -252,7 +274,34 @@ async function getSummaryAsync(text: string, apiKey: string, model: string): Pro
   return response.content;
 }
 
-// Nullまたは空白文字の判定
+//タイトル命名関数
+async function getRoomNameAsync(text: string, apiKey: string, model: string): Promise<string> {
+  const chat = createChat({
+    apiKey: apiKey!,
+    model: model!,
+  });
+
+  chat.addMessage({
+    role: 'system',
+    content:
+      'あなたはプロの編集者です。これから送るチャットログにチャットタイトルをつけてそれだけを回答してください。\n' +
+      '- チャットの会話で使われている言語でタイトルを考えてください。\n' +
+      '- ログは冒頭に行くほど重要な情報です。\n' +
+      '# 制約条件\n' +
+      '- 「」や"\'などの記号を使わないこと。\n' +
+      '- 句読点を使わないこと。\n' +
+      '- 短くシンプルに、UNICODEの全角文字に換算して最大でも16文字を絶対に超えないように。これは重要な条件です。\n' +
+      '# 例\n' +
+      '宣言型モデルとフロントエンド\n' +
+      '日英翻訳',
+  });
+
+  const response = await chat.sendMessage(text);
+
+  return response.content;
+}
+
+// Nullまたは空白文字の判定関数
 function isNullOrWhiteSpace(str: string | null | undefined): boolean {
   return !str || str.trim() === '';
 }

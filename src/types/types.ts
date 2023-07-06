@@ -12,7 +12,7 @@ export type Message = {
   id?: number;
   role: 'function' | 'assistant' | 'system' | 'user';
   date: Date;
-  text: string;
+  content: string;
   usage: string;
 };
 

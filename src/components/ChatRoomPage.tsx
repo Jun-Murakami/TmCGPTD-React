@@ -33,7 +33,7 @@ export function ChatRoomPage() {
   const { userMessageState, handleUserEdit, handleUserSaved, handleUserCancel } = useUserMessage();
 
   //アシスタントメッセージの監視と更新-----------------------------------------------
-  const {} = useProcessSendMessage();
+  useProcessSendMessage();
 
   //currentRoomIdが変更されたら、currentMessagesを更新-----------------------------------------------
   useEffect(() => {
@@ -55,15 +55,24 @@ export function ChatRoomPage() {
   //currentMessagesが変更されたら、systemMessageId、userLastId、assistantLastIdを更新-----------------------------------------------
   useEffect(() => {
     //最後のシステムメッセージの更新
+    let isSystemMessageEnabled = false;
     for (let i = currentMessages.length - 1; i >= 0; i--) {
       if (currentMessages[i].role === 'system') {
         setRoomState((prevState) => ({
           ...prevState,
           systemMessageId: currentMessages.find((message) => message.role === 'system')?.id,
-          systemMessage: currentMessages.find((message) => message.role === 'system')?.text,
+          systemMessage: currentMessages.find((message) => message.role === 'system')?.content,
         }));
+        isSystemMessageEnabled = true;
         break;
       }
+    }
+    if (!isSystemMessageEnabled) {
+      setRoomState((prevState) => ({
+        ...prevState,
+        systemMessageId: undefined,
+        systemMessage: '',
+      }));
     }
 
     //最後のユーザーメッセージの更新
@@ -72,7 +81,7 @@ export function ChatRoomPage() {
         setRoomState((prevState) => ({
           ...prevState,
           lastUserMessageId: currentMessages[i].id,
-          lastUserMessage: currentMessages[i].text,
+          lastUserMessage: currentMessages[i].content,
         }));
         break;
       }
@@ -179,12 +188,12 @@ export function ChatRoomPage() {
                           whiteSpace: 'pre-wrap',
                         }}
                       >
-                        {message.text}
+                        {message.content}
                       </Typography>
                     )}
                   </Box>
                 ) : (
-                  makeMarkedHtml(message.text)
+                  makeMarkedHtml(message.content)
                 )}
                 <Stack marginBottom={1.5} sx={{ color: 'grey.500' }} width={'100%'}>
                   <Typography variant='caption' textAlign='right'>

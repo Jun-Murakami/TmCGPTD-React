@@ -18,13 +18,12 @@ export function MainContainer() {
   const setCurrentMessages = useChatStore((state) => state.setCurrentMessages);
   const inputText = useAppStore((state) => state.inputText);
   const setInputText = useAppStore((state) => state.setInputText);
-
-  const uuid = useUserStore((state) => state.uuid);
   const apiKey = useUserStore((state) => state.apiKey);
+  const uuid = useUserStore((state) => state.uuid);
 
   useEffect(() => {
     const getChatRoomsAync = async () => {
-      const rooms = await getChatRoomsDb(uuid!);
+      const rooms = await getChatRoomsDb();
       setRoomState((prev) => ({ ...prev, currentRoomName: '', chatRooms: rooms }));
     };
     getChatRoomsAync();
@@ -32,14 +31,18 @@ export function MainContainer() {
   }, []);
 
   const handlePostButtonClick = async () => {
+    if (!uuid) {
+      await showDialog('An unknown error occurred.', 'Error');
+      return;
+    }
     if (roomState.isNewChat && inputText.length > 0 && roomState.currentRoomName!.length > 0) {
       const messages: Message[] = [
-        { role: 'system', date: new Date(), text: roomState.systemMessage!, usage: '' },
-        { role: 'user', date: new Date(), text: inputText, usage: '' },
-        { role: 'assistant', date: new Date(), text: '', usage: '' },
+        { role: 'system', date: new Date(), content: roomState.systemMessage!, usage: '' },
+        { role: 'user', date: new Date(), content: inputText, usage: '' },
+        { role: 'assistant', date: new Date(), content: '', usage: '' },
       ];
-      const newRoomId = await createChatRoomAndMessagesDb(roomState.currentRoomName!, messages);
-      const newRooms = await getChatRoomsDb(uuid!);
+      const newRoomId = await createChatRoomAndMessagesDb(uuid!, roomState.currentRoomName!, messages);
+      const newRooms = await getChatRoomsDb();
       setRoomState((prev) => ({
         ...prev,
         chatRooms: newRooms,
@@ -50,14 +53,14 @@ export function MainContainer() {
       setInputText('');
     } else if (!roomState.isNewChat && inputText.length > 0) {
       const messages: Message[] = [
-        { role: 'user', date: new Date(), text: inputText, usage: '' },
-        { role: 'assistant', date: new Date(), text: '', usage: '' },
+        { role: 'user', date: new Date(), content: inputText, usage: '' },
+        { role: 'assistant', date: new Date(), content: '', usage: '' },
       ];
       await addMessageDb(roomState.currentRoomId!, messages);
       await getMessagesDb(roomState.currentRoomId!).then(setCurrentMessages);
       setRoomState((prev) => ({ ...prev, isNewInputAdded: true, userInput: inputText }));
       setInputText('');
-    } else if ((roomState.isNewChat && apiKey === null) || apiKey === '') {
+    } else if (roomState.isNewChat && (apiKey === null || apiKey === '' || apiKey === undefined)) {
       await showDialog('Please enter api key.', 'Information');
     } else if (roomState.isNewChat && roomState.currentRoomName! === '') {
       await showDialog('Please enter a chat title.', 'Information');
