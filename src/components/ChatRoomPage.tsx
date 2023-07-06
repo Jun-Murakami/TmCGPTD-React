@@ -3,13 +3,14 @@ import { useEffect } from 'react';
 import { Box, Card, Divider, Stack, Avatar, Typography } from '@mui/material';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import ReactMarkdown from 'react-markdown';
-import { getMessagesDb, updateAssistantMessageDb } from '../services/supabaseDb';
+import { getMessagesDb, getChatroomDetailDb } from '../services/supabaseDb';
 import { Message } from '../types/types';
 import { useSystemMessage } from '../hooks/useSystemMessage';
 import { useUserMessage } from '../hooks/useUserMessage';
 import { useUserStore } from '../store/userStore';
 import { useChatStore } from '../store/chatStore';
 import { useAppStore } from '../store/appStore';
+import { ChatRoom } from '../types/types';
 import { useProcessSendMessage } from '../hooks/useProcessSendMessage';
 import { useDialogStore } from '../store/dialogStore';
 import { AiIcon } from '../components/AiIcon';
@@ -35,9 +36,26 @@ export function ChatRoomPage() {
   //アシスタントメッセージの監視と更新-----------------------------------------------
   useProcessSendMessage();
 
-  //currentRoomIdが変更されたら、currentMessagesを更新-----------------------------------------------
+  //currentRoomIdが変更されたら、chatRoom詳細を取得してcurrentMessagesを更新-----------------------------------------------
   useEffect(() => {
     if (!uuid || !roomState.currentRoomId) return;
+    const getChatRoomDetailAsync = async () => {
+      await getChatroomDetailDb(roomState.currentRoomId!).then((chatRoom) => {
+        if (!chatRoom) {
+          showDialog('Failed to load chat room.', 'Error');
+          return;
+        }
+        setRoomState((prevState) => ({
+          ...prevState,
+          currentRoomName: chatRoom.roomName,
+          currentCategory: chatRoom.category,
+          json: chatRoom.json,
+          jsonPrev: chatRoom.jsonPrev,
+        }));
+      });
+    };
+    getChatRoomDetailAsync();
+
     const getMessageAsync = async () => {
       await getMessagesDb(roomState.currentRoomId!).then(setCurrentMessages);
       if (roomState.userInput !== '') {

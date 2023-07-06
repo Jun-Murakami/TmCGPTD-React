@@ -4,8 +4,8 @@ export type ChatRoom = {
   roomName: string;
   category?: string;
   lastPrompt?: string;
-  json?: Chat;
-  jsonprev?: Chat;
+  json?: Chat[];
+  jsonPrev?: Chat[];
 };
 
 export type Message = {

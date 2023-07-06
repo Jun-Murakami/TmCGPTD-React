@@ -8,7 +8,13 @@ import { SwipeableRoomsDrawer } from '../components/SwipeableRoomsDrawer';
 import { PromptInput } from './PromptInput';
 import { ChatRoomPage } from './ChatRoomPage';
 import { NewChatPage } from './NewChatPage';
-import { createChatRoomAndMessagesDb, getChatRoomsDb, addMessageDb, getMessagesDb } from '../services/supabaseDb';
+import {
+  createChatRoomAndMessagesDb,
+  getChatRoomsDb,
+  addMessageDb,
+  getMessagesDb,
+  removeEditableMarkDb,
+} from '../services/supabaseDb';
 import { Message } from '../types/types';
 
 export function MainContainer() {
@@ -35,31 +41,51 @@ export function MainContainer() {
       await showDialog('An unknown error occurred.', 'Error');
       return;
     }
+
+    // 新規チャットの場合
     if (roomState.isNewChat && inputText.length > 0 && roomState.currentRoomName!.length > 0) {
-      const messages: Message[] = [
-        { role: 'system', date: new Date(), content: roomState.systemMessage!, usage: '' },
-        { role: 'user', date: new Date(), content: inputText, usage: '' },
-        { role: 'assistant', date: new Date(), content: '', usage: '' },
-      ];
-      const newRoomId = await createChatRoomAndMessagesDb(uuid!, roomState.currentRoomName!, messages);
-      const newRooms = await getChatRoomsDb();
-      setRoomState((prev) => ({
-        ...prev,
-        chatRooms: newRooms,
-        currentRoomId: newRoomId,
-        isNewChat: false,
-        userInput: inputText,
-      }));
-      setInputText('');
+      try {
+        const messages: Message[] = [
+          { role: 'system', date: new Date(), content: '#System' + roomState.systemMessage! + '---', usage: '' },
+          { role: 'user', date: new Date(), content: inputText + '\n\n(!--editable--)', usage: '' },
+          { role: 'assistant', date: new Date(), content: '', usage: '' },
+        ];
+        const newRoomId = await createChatRoomAndMessagesDb(uuid!, roomState.currentRoomName!, messages);
+        const newRooms = await getChatRoomsDb();
+        setRoomState((prev) => ({
+          ...prev,
+          chatRooms: newRooms,
+          currentRoomId: newRoomId,
+          isNewChat: false,
+          userInput: inputText,
+        }));
+        setInputText('');
+      } catch (ex) {
+        if (ex instanceof Error) {
+          await showDialog(ex.message, 'Error');
+        } else {
+          await showDialog('An unknown error occurred.', 'Error');
+        }
+      }
+      // 既存チャットの場合
     } else if (!roomState.isNewChat && inputText.length > 0) {
-      const messages: Message[] = [
-        { role: 'user', date: new Date(), content: inputText, usage: '' },
-        { role: 'assistant', date: new Date(), content: '', usage: '' },
-      ];
-      await addMessageDb(roomState.currentRoomId!, messages);
-      await getMessagesDb(roomState.currentRoomId!).then(setCurrentMessages);
-      setRoomState((prev) => ({ ...prev, isNewInputAdded: true, userInput: inputText }));
-      setInputText('');
+      try {
+        const messages: Message[] = [
+          { role: 'user', date: new Date(), content: inputText + '\n\n(!--editable--)', usage: '' },
+          { role: 'assistant', date: new Date(), content: '', usage: '' },
+        ];
+        await addMessageDb(uuid!, roomState.currentRoomId!, messages);
+        await removeEditableMarkDb(roomState.lastUserMessageId!);
+        await getMessagesDb(roomState.currentRoomId!).then(setCurrentMessages);
+        setRoomState((prev) => ({ ...prev, isNewInputAdded: true, userInput: inputText }));
+        setInputText('');
+      } catch (ex) {
+        if (ex instanceof Error) {
+          await showDialog(ex.message, 'Error');
+        } else {
+          await showDialog('An unknown error occurred.', 'Error');
+        }
+      }
     } else if (roomState.isNewChat && (apiKey === null || apiKey === '' || apiKey === undefined)) {
       await showDialog('Please enter api key.', 'Information');
     } else if (roomState.isNewChat && roomState.currentRoomName! === '') {

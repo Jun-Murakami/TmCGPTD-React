@@ -15,7 +15,8 @@ type RoomState = {
   lastUserMessageId?: number;
   lastAssistantMessage?: string;
   lastAssistantMessageId?: number;
-  conversationHistory?: Chat[];
+  json?: Chat[];
+  jsonPrev?: Chat[];
   userInput: string;
   isNewInputAdded: boolean;
 };
@@ -41,7 +42,8 @@ export const useChatStore = create<ChatStore>((set) => ({
     lastUserMessageId: undefined,
     lastAssistantMessage: '',
     lastAssistantMessageId: undefined,
-    conversationHistory: [],
+    json: [],
+    jsonPrev: [],
     userInput: '',
     isNewInputAdded: false,
   },

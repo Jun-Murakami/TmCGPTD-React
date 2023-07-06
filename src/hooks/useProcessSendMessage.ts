@@ -22,10 +22,17 @@ export function useProcessSendMessage() {
     if (!roomState.isNewInputAdded || !apiKey || !model || roomState.userInput === '') return;
 
     const getAssistantMessage = async () => {
-      // ユーザー入力以外のメッセージを取得
-      let messages: Chat[] = currentMessages.slice(0, -2).map((message) => {
-        return { role: message.role, content: message.content };
-      });
+      let messages: Chat[] = []; // メッセージを格納する配列
+
+      // jsonがある場合はjsonを取得
+      if (roomState.json?.length) {
+        messages = roomState.json;
+      } else {
+        // jsonが無い場合はユーザー入力以外のメッセージを取得
+        messages = currentMessages.slice(0, -2).map((message) => {
+          return { role: message.role, content: message.content };
+        });
+      }
 
       let isSummarized: boolean = false; // 要約フラグをリセット
       let isDeleteHistory: boolean = false; // 履歴削除フラグをリセット
@@ -156,6 +163,7 @@ export function useProcessSendMessage() {
       });
       const promptTokens: number = encode(prompts.join()).length;
 
+      //会話履歴を入力
       for (const message of processedMessages!) {
         chat.addMessage(message);
       }
@@ -163,6 +171,7 @@ export function useProcessSendMessage() {
       let updatedMessage: Message | null = null; // 更新されたメッセージを保持する変数
 
       try {
+        // ユーザー入力を送信
         await chat.sendMessage(roomState.userInput, (response) => {
           if (response.message?.choices === undefined) return;
           if (response.message?.choices[0].delta === undefined) return;
@@ -217,15 +226,27 @@ export function useProcessSendMessage() {
       // sendMessageが完了した後にデータベースを更新
       if (updatedMessage) {
         try {
-          await updateAssistantMessageDb(roomState.currentRoomId!, roomState.lastAssistantMessageId!, updatedMessage);
-          if (isNullOrWhiteSpace(roomState.currentRoomName!)) {
-          }
-          //processedMessagesにuserInputを追加
-          processedMessages!.push(
+          const nonNullUpdatedMessage: Message = updatedMessage;
+
+          const postedConversation: Chat[] = [
+            ...processedMessages,
             { role: 'user', content: roomState.userInput! },
-            { role: 'assistant', content: updatedMessage.content }
+            { role: 'assistant', content: nonNullUpdatedMessage.content },
+          ];
+          await updateAssistantMessageDb(
+            roomState.currentRoomId!,
+            roomState.lastAssistantMessageId!,
+            nonNullUpdatedMessage,
+            postedConversation,
+            processedMessages,
+            roomState.userInput
           );
-          setRoomState((prev) => ({ ...prev, conversationHistory: processedMessages })); //会話履歴にセット
+          //会話履歴にセット
+          setRoomState((prev) => ({
+            ...prev,
+            json: processedMessages,
+            jsonPrev: postedConversation,
+          }));
         } catch (ex) {
           if (ex instanceof Error) {
             await showDialog(ex.message, 'Error');
