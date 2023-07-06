@@ -24,7 +24,6 @@ function App() {
   useEffect(() => {
     const browserLanguage = navigator.language.split('-')[0];
     setLanguage(browserLanguage);
-    console.log('browserLanguage', browserLanguage);
     const apiModel = localStorage.getItem('apiModel');
     setApiModel(apiModel ? apiModel : 'gpt-3.5-turbo');
     // eslint-disable-next-line react-hooks/exhaustive-deps

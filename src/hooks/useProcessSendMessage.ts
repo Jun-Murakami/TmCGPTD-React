@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { createChat } from 'completions';
 import { encode } from 'gpt-tokenizer';
 import { Message } from '../types/types';
-import { updateAssistantMessageDb } from '../services/supabaseDb';
+import { updateAssistantMessageDb, updateChatRoomNameDb, getChatRoomsDb } from '../services/supabaseDb';
 import { useDialogStore } from '../store/dialogStore';
 import { useChatStore } from '../store/chatStore';
 import { useAppStore } from '../store/appStore';
@@ -21,9 +21,13 @@ export function useProcessSendMessage() {
   useEffect(() => {
     if (!roomState.isNewInputAdded || !apiKey || !model || roomState.userInput === '') return;
 
-    const getAssistantMessage = async () => {
-      let messages: Chat[] = []; // メッセージを格納する配列
+    let messages: Chat[] = []; // メッセージを格納する配列
+    let isSummarized: boolean = false; // 要約フラグをリセット
+    let isDeleteHistory: boolean = false; // 履歴削除フラグをリセット
+    let processedMessages: Chat[] = []; // 処理済みのメッセージを格納する配列
+    let updatedMessage: Message | null = null; // 更新されたメッセージを保持する変数
 
+    const getAssistantMessage = async () => {
       // jsonがある場合はjsonを取得
       if (roomState.json?.length) {
         messages = roomState.json;
@@ -33,10 +37,6 @@ export function useProcessSendMessage() {
           return { role: message.role, content: message.content };
         });
       }
-
-      let isSummarized: boolean = false; // 要約フラグをリセット
-      let isDeleteHistory: boolean = false; // 履歴削除フラグをリセット
-      let processedMessages: Chat[] = []; // 処理済みのメッセージを格納する配列
 
       const inputTokenCount = encode(roomState.userInput as string).length; // 入力文字列のトークン数を取得
 
@@ -53,13 +53,11 @@ export function useProcessSendMessage() {
 
       // そもそもユーザー入力が4096を超えている場合はエラー
       if (inputTokenCount > 4096) {
-        await showDialog(
+        new Error(
           `The values for input text (${inputTokenCount}) exceeds 4097 tokens. Please reduce by at least ${
             inputTokenCount - 4096
-          } tokens.`,
-          'Error'
+          } tokens.`
         );
-        return [];
       }
 
       // 過去の履歴＋ユーザーの新規入力がmaxContentLengthを超えた場合の要約処理
@@ -139,6 +137,8 @@ export function useProcessSendMessage() {
             isDeleteHistory = true; // 履歴削除フラグを立てる
           }
         }
+      } else {
+        processedMessages = messages!.slice();
       }
 
       if (!isNullOrWhiteSpace(roomState.systemMessage)) {
@@ -167,8 +167,6 @@ export function useProcessSendMessage() {
       for (const message of processedMessages!) {
         chat.addMessage(message);
       }
-
-      let updatedMessage: Message | null = null; // 更新されたメッセージを保持する変数
 
       try {
         // ユーザー入力を送信
@@ -211,6 +209,24 @@ export function useProcessSendMessage() {
               return newMessages;
             });
           } else if ('role' in delta) {
+            //do nothing
+          } else if (response.message.choices[0].finish_reason === 'stop') {
+            if (updatedMessage) {
+              const postedConversation: Chat[] = [
+                ...processedMessages,
+                { role: 'user', content: roomState.userInput! },
+                { role: 'assistant', content: updatedMessage.content },
+              ];
+              setRoomState((prev) => ({
+                ...prev,
+                lastAssistantMessage: updatedMessage!,
+                isAssistantMessageRecievedDone: true,
+                json: postedConversation,
+                jsonPrev: processedMessages,
+              }));
+            } else {
+              throw new Error('Unexpected message');
+            }
           } else if (response.message.choices[0].finish_reason !== 'stop') {
             throw new Error('Unexpected message');
           }
@@ -222,49 +238,62 @@ export function useProcessSendMessage() {
           await showDialog('An unknown error occurred.', 'Error');
         }
       }
+    };
+    getAssistantMessage();
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roomState.isNewInputAdded]);
+
+  //受信完了処理とデータベース更新
+  useEffect(() => {
+    if (!roomState.isAssistantMessageRecievedDone) {
+      return;
+    }
+
+    const setAssistantMessage = async () => {
       // sendMessageが完了した後にデータベースを更新
-      if (updatedMessage) {
-        try {
-          const nonNullUpdatedMessage: Message = updatedMessage;
-
-          const postedConversation: Chat[] = [
-            ...processedMessages,
-            { role: 'user', content: roomState.userInput! },
-            { role: 'assistant', content: nonNullUpdatedMessage.content },
-          ];
-          await updateAssistantMessageDb(
-            roomState.currentRoomId!,
-            roomState.lastAssistantMessageId!,
-            nonNullUpdatedMessage,
-            postedConversation,
-            processedMessages,
-            roomState.userInput
-          );
-          //会話履歴にセット
-          setRoomState((prev) => ({
-            ...prev,
-            json: processedMessages,
-            jsonPrev: postedConversation,
-          }));
-        } catch (ex) {
-          if (ex instanceof Error) {
-            await showDialog(ex.message, 'Error');
-          } else {
-            await showDialog('An unknown error occurred.', 'Error');
+      try {
+        if (isNullOrWhiteSpace(roomState.currentRoomName)) {
+          //roomState.jsonを反復
+          let forNamingString = '';
+          for (const message of roomState.json!) {
+            if (message.role === 'user' || message.role === 'assistant') {
+              forNamingString += message.content + '\n';
+            }
           }
+          const roomName: string = await getRoomNameAsync(forNamingString, apiKey!, model!);
+          await updateChatRoomNameDb(roomState.currentRoomId!, roomName);
+          const rooms = await getChatRoomsDb();
+          setRoomState((prev) => ({ ...prev, currentRoomName: roomName, chatRooms: rooms }));
+        }
+        await updateAssistantMessageDb(
+          roomState.currentRoomId!,
+          roomState.lastAssistantMessageId!,
+          roomState.lastAssistantMessage!,
+          roomState.json!,
+          roomState.jsonPrev!,
+          roomState.userInput
+        );
+      } catch (ex) {
+        if (ex instanceof Error) {
+          await showDialog(ex.message, 'Error');
+        } else {
+          await showDialog('An unknown error occurred.', 'Error');
         }
       }
     };
-    getAssistantMessage();
+    setAssistantMessage();
 
     setRoomState((prevState) => ({
       ...prevState,
       isNewInputAdded: false,
       userInput: '',
+      isAssistantMessageRecievedDone: false,
     }));
+
+    console.log(roomState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roomState.isNewInputAdded]);
+  }, [roomState.isAssistantMessageRecievedDone]);
 }
 
 //システムメッセージ検索関数

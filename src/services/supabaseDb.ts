@@ -181,7 +181,7 @@ export async function updateAssistantMessageDb(
     new Error('Failed to update assistant message. ' + error.message);
   } else {
     const { error } = await supabase
-      .from('messages')
+      .from('chatrooms')
       .update({
         updated_on: dateTimeRounder(message.date),
         json: JSON.stringify(json),
@@ -195,6 +195,14 @@ export async function updateAssistantMessageDb(
     }
   }
   console.log('updateAssistantMessageDb');
+}
+
+export async function updateChatRoomNameDb(roomId: number, roomName: string) {
+  const { error } = await supabase.from('chatrooms').update({ title: roomName }).eq('id', roomId);
+
+  if (error) {
+    new Error('Failed to update assistant message. ' + error.message);
+  }
 }
 
 function dateTimeRounder(date: Date): Date {

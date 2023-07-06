@@ -16,7 +16,6 @@ export function useSupabaseSession() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session) {
-        console.log(session);
         const uuid = session.user?.id || null;
         const email = session.user?.email || null;
         const nickname = session.user?.user_metadata?.name || null;
@@ -39,6 +38,8 @@ export function useSupabaseSession() {
     });
 
     return () => subscription.unsubscribe();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return session;

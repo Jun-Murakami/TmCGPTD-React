@@ -9,8 +9,6 @@ import { useSystemMessage } from '../hooks/useSystemMessage';
 import { useUserMessage } from '../hooks/useUserMessage';
 import { useUserStore } from '../store/userStore';
 import { useChatStore } from '../store/chatStore';
-import { useAppStore } from '../store/appStore';
-import { ChatRoom } from '../types/types';
 import { useProcessSendMessage } from '../hooks/useProcessSendMessage';
 import { useDialogStore } from '../store/dialogStore';
 import { AiIcon } from '../components/AiIcon';

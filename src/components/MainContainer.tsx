@@ -43,7 +43,7 @@ export function MainContainer() {
     }
 
     // 新規チャットの場合
-    if (roomState.isNewChat && inputText.length > 0 && roomState.currentRoomName!.length > 0) {
+    if (roomState.isNewChat && inputText.length > 0) {
       try {
         const messages: Message[] = [
           { role: 'system', date: new Date(), content: '#System' + roomState.systemMessage! + '---', usage: '' },

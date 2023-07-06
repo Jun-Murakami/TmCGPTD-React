@@ -3,7 +3,7 @@ import { produce } from 'immer';
 import { getMessagesDb } from '../services/supabaseDb';
 import { Message, ChatRoom, Chat } from '../types/types';
 
-type RoomState = {
+export type RoomState = {
   isNewChat: boolean;
   chatRooms: ChatRoom[];
   currentRoomId?: number;
@@ -13,8 +13,9 @@ type RoomState = {
   systemMessageId?: number;
   lastUserMessage?: string;
   lastUserMessageId?: number;
-  lastAssistantMessage?: string;
+  lastAssistantMessage?: Message;
   lastAssistantMessageId?: number;
+  isAssistantMessageRecievedDone?: boolean;
   json?: Chat[];
   jsonPrev?: Chat[];
   userInput: string;
@@ -40,8 +41,9 @@ export const useChatStore = create<ChatStore>((set) => ({
     systemMessageId: undefined,
     lastUserMessage: '',
     lastUserMessageId: undefined,
-    lastAssistantMessage: '',
+    lastAssistantMessage: undefined,
     lastAssistantMessageId: undefined,
+    isAssistantMessageRecievedDone: false,
     json: [],
     jsonPrev: [],
     userInput: '',
