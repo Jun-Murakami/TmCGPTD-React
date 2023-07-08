@@ -1,4 +1,5 @@
 // src/ChatRoom.tsx
+import React from 'react';
 import { useEffect } from 'react';
 import { Box, Card, Divider, Stack, Avatar, Typography } from '@mui/material';
 import PsychologyIcon from '@mui/icons-material/Psychology';
@@ -118,7 +119,181 @@ export function ChatRoomPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentMessages.length]);
 
-  //マークダウン変換--------------------------------------------------------------
+  return (
+    <Stack
+      sx={{ p: 1, width: '100%', paddingBottom: 10 }}
+      divider={<Divider orientation='horizontal' flexItem />}
+      spacing={2}
+      maxWidth={900}
+      minWidth={260}
+    >
+      {currentMessages.map((message) => (
+        <div key={message.id}>
+          {message.id === roomState.systemMessageId ? (
+            <SystemMessage
+              message={message}
+              systemMessageState={systemMessageState}
+              handleSystemEdit={handleSystemEdit}
+              handleSystemSaved={handleSystemSaved}
+              handleSystemCancel={handleSystemCancel}
+              setText={(newText) => setRoomState((prevState) => ({ ...prevState, SystemMessage }))}
+            />
+          ) : message.role === 'user' && message.id === roomState.lastUserMessageId ? (
+            <LastUserMessage
+              message={message}
+              userAvatar={userAvatar}
+              userMessageState={userMessageState}
+              handleUserEdit={handleUserEdit}
+              handleUserSaved={handleUserSaved}
+              handleUserCancel={handleUserCancel}
+              setText={(newText) => setRoomState((prevState) => ({ ...prevState, LastUserMessage }))}
+            />
+          ) : message.role === 'user' && message.id !== roomState.lastUserMessageId ? (
+            <UserMessage message={message} userAvatar={userAvatar} />
+          ) : message.role === 'assistant' && message.id !== roomState.lastAssistantMessageId ? (
+            <AssistantMessage message={message} />
+          ) : message.role === 'assistant' && message.id === roomState.lastAssistantMessageId ? (
+            <LastAssistantMessage message={message} />
+          ) : (
+            ''
+          )}
+        </div>
+      ))}
+    </Stack>
+  );
+}
+
+type SystemMessageProps = {
+  message: Message;
+  systemMessageState: EditableMessageState;
+  handleSystemEdit: () => void;
+  handleSystemSaved: () => void;
+  handleSystemCancel: () => void;
+  setText: (newText: string) => void;
+};
+
+export function SystemMessage({
+  message,
+  systemMessageState,
+  handleSystemEdit,
+  handleSystemSaved,
+  handleSystemCancel,
+  setText,
+}: SystemMessageProps) {
+  return (
+    <Box sx={{ p: 1.5, alignItems: 'left' }}>
+      <Stack spacing={2}>
+        <PsychologyIcon sx={{ fontSize: 30, marginTop: 0 }} color='primary' />
+        <EditPromptButton
+          isEditing={systemMessageState.isTextEditing}
+          onEdit={handleSystemEdit}
+          onSave={handleSystemSaved}
+          onCancel={handleSystemCancel}
+          marginTop={0}
+        />
+      </Stack>
+      <Box sx={{ pl: 5, width: '100%' }} marginTop={-3.4}>
+        <TextFieldMod
+          isSaved={systemMessageState.isTextSaved}
+          isEditing={systemMessageState.isTextEditing}
+          text={message.content}
+          id={message.id}
+          setText={setText}
+        />
+      </Box>
+    </Box>
+  );
+}
+
+type LastUserMessageProps = {
+  message: Message;
+  userAvatar: string | null;
+  userMessageState: EditableMessageState;
+  handleUserEdit: () => void;
+  handleUserSaved: () => void;
+  handleUserCancel: () => void;
+  setText: (newText: string) => void;
+};
+
+export function LastUserMessage({
+  message,
+  userAvatar,
+  userMessageState,
+  handleUserEdit,
+  handleUserSaved,
+  handleUserCancel,
+  setText,
+}: LastUserMessageProps) {
+  return (
+    <Card sx={{ p: 1.5, display: 'block' }}>
+      <Avatar alt='Avatar' src={userAvatar!} sx={{ width: 30, height: 30 }} />
+      <EditPromptButton
+        isEditing={userMessageState.isTextEditing}
+        onEdit={handleUserEdit}
+        onSave={handleUserSaved}
+        onCancel={handleUserCancel}
+        marginTop={-1}
+      />
+      <Stack sx={{ pl: 5 }} marginTop={-6.1} width={'100%'}>
+        <Box marginTop={2.7} sx={{ width: '100%' }}>
+          <TextFieldMod
+            isSaved={userMessageState.isTextSaved}
+            isEditing={userMessageState.isTextEditing}
+            text={message.content}
+            id={message.id!}
+            setText={setText}
+          />
+        </Box>
+        <Stack marginBottom={1.5} sx={{ color: 'grey.500' }} width={'100%'}>
+          <Typography variant='caption' textAlign='right'>
+            {message.date.getFullYear() > 1
+              ? `[${message.date.toLocaleDateString() + ' ' + message.date.toLocaleTimeString()}]`
+              : `[Web Chat]`}
+          </Typography>
+        </Stack>
+      </Stack>
+    </Card>
+  );
+}
+
+type UserMessageProps = {
+  message: Message;
+  userAvatar: string | null;
+};
+
+export const UserMessage = React.memo(({ message, userAvatar }: UserMessageProps) => {
+  return (
+    <Card sx={{ p: 1.5, display: 'block' }}>
+      <Avatar alt='Avatar' src={userAvatar!} sx={{ width: 30, height: 30 }} />
+      <Stack sx={{ pl: 5 }} marginTop={-6.1} width={'100%'}>
+        <Box marginTop={2.7} sx={{ width: '100%' }}>
+          <Typography
+            lineHeight={1.44}
+            sx={{
+              width: '100%',
+              whiteSpace: 'pre-wrap',
+            }}
+          >
+            {message.content}
+          </Typography>
+        </Box>
+        <Stack marginBottom={1.5} sx={{ color: 'grey.500' }} width={'100%'}>
+          <Typography variant='caption' textAlign='right'>
+            {message.date.getFullYear() > 1
+              ? `[${message.date.toLocaleDateString() + ' ' + message.date.toLocaleTimeString()}]`
+              : `[Web Chat]`}
+          </Typography>
+        </Stack>
+      </Stack>
+    </Card>
+  );
+});
+
+type AssistantMessageProps = {
+  message: Message;
+};
+
+export function LastAssistantMessage({ message }: AssistantMessageProps) {
   const makeMarkedHtml = (html: string) => {
     return (
       <ReactMarkdown
@@ -132,105 +307,25 @@ export function ChatRoomPage() {
   };
 
   return (
-    <Stack
-      sx={{ p: 1, width: '100%', paddingBottom: 10 }}
-      divider={<Divider orientation='horizontal' flexItem />}
-      spacing={2}
-      maxWidth={900}
-      minWidth={260}
-    >
-      {currentMessages.map((message) => (
-        <div key={message.id}>
-          {message.id === roomState.systemMessageId ? (
-            <Box sx={{ p: 1.5, alignItems: 'left' }}>
-              <Stack spacing={2}>
-                <PsychologyIcon sx={{ fontSize: 30, marginTop: 0 }} color='primary' />
-                <EditPromptButton
-                  isEditing={systemMessageState.isTextEditing}
-                  onEdit={handleSystemEdit}
-                  onSave={handleSystemSaved}
-                  onCancel={handleSystemCancel}
-                  marginTop={0}
-                />
-              </Stack>
-              <Box sx={{ pl: 5, width: '100%' }} marginTop={-3.4}>
-                <TextFieldMod
-                  isSaved={systemMessageState.isTextSaved}
-                  isEditing={systemMessageState.isTextEditing}
-                  text={roomState.systemMessage!}
-                  id={message.id}
-                  setText={(newText) => setRoomState((prev) => ({ ...prev, systemMessage: newText }))}
-                />
-              </Box>
-            </Box>
-          ) : (
-            <Card sx={{ p: 1.5, display: 'block' }}>
-              {message.role === 'user' ? (
-                <>
-                  <Avatar alt='Avatar' src={userAvatar!} sx={{ width: 30, height: 30 }} />
-                  {message.id === roomState.lastUserMessageId && (
-                    <EditPromptButton
-                      isEditing={userMessageState.isTextEditing}
-                      onEdit={handleUserEdit}
-                      onSave={handleUserSaved}
-                      onCancel={handleUserCancel}
-                      marginTop={-1}
-                    />
-                  )}
-                </>
-              ) : (
-                <AiIcon sx={{ fontSize: 30 }} color='primary' />
-              )}
-              <Stack sx={{ pl: 5 }} marginTop={-6.1} width={'100%'}>
-                {message.role === 'user' ? (
-                  <Box marginTop={2.7} sx={{ width: '100%' }}>
-                    {message.id === roomState.lastUserMessageId ? (
-                      <TextFieldMod
-                        isSaved={userMessageState.isTextSaved}
-                        isEditing={userMessageState.isTextEditing}
-                        text={roomState.lastUserMessage!}
-                        id={message.id!}
-                        setText={(newText) =>
-                          setRoomState((prevState) => ({
-                            ...prevState,
-                            lastUserMessage: newText,
-                          }))
-                        }
-                      />
-                    ) : (
-                      <Typography
-                        lineHeight={1.44}
-                        sx={{
-                          width: '100%',
-                          whiteSpace: 'pre-wrap',
-                        }}
-                      >
-                        {message.content}
-                      </Typography>
-                    )}
-                  </Box>
-                ) : (
-                  makeMarkedHtml(message.content)
-                )}
-                <Stack marginBottom={1.5} sx={{ color: 'grey.500' }} width={'100%'}>
-                  <Typography variant='caption' textAlign='right'>
-                    {message.date.getFullYear() > 1
-                      ? `[${message.date.toLocaleDateString() + ' ' + message.date.toLocaleTimeString()}]`
-                      : `[Web Chat]`}
-                  </Typography>
-                  {message.role === 'assistant' ? (
-                    <Typography variant='caption' sx={{ lineBreak: 'anywhere', whiteSpace: 'pre-wrap' }} textAlign='right'>
-                      {message.usage}
-                    </Typography>
-                  ) : (
-                    ''
-                  )}
-                </Stack>
-              </Stack>
-            </Card>
-          )}
-        </div>
-      ))}
-    </Stack>
+    <Card sx={{ p: 1.5, display: 'block' }}>
+      <AiIcon sx={{ fontSize: 30 }} color='primary' />
+      <Stack sx={{ pl: 5 }} marginTop={-6.1} width={'100%'}>
+        {makeMarkedHtml(message.content)}
+        <Stack marginBottom={1.5} sx={{ color: 'grey.500' }} width={'100%'}>
+          <Typography variant='caption' textAlign='right'>
+            {message.date.getFullYear() > 1
+              ? `[${message.date.toLocaleDateString() + ' ' + message.date.toLocaleTimeString()}]`
+              : `[Web Chat]`}
+          </Typography>
+          <Typography variant='caption' sx={{ lineBreak: 'anywhere', whiteSpace: 'pre-wrap' }} textAlign='right'>
+            {message.usage}
+          </Typography>
+        </Stack>
+      </Stack>
+    </Card>
   );
 }
+
+export const AssistantMessage = React.memo(({ message }: AssistantMessageProps) => {
+  return <LastAssistantMessage message={message} />;
+});
