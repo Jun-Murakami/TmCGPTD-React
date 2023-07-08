@@ -1,3 +1,4 @@
+// useProcessSendMessage.ts (custom hook)
 import { useEffect } from 'react';
 import { createChat } from 'completions';
 import { encode } from 'gpt-tokenizer';
@@ -233,7 +234,7 @@ export function useProcessSendMessage() {
         });
       } catch (ex) {
         if (ex instanceof Error) {
-          await showDialog(ex.message, 'Error');
+          await showDialog(ex.message + ex.stack, 'Error');
         } else {
           await showDialog('An unknown error occurred.', 'Error');
         }
@@ -276,7 +277,7 @@ export function useProcessSendMessage() {
         );
       } catch (ex) {
         if (ex instanceof Error) {
-          await showDialog(ex.message, 'Error');
+          await showDialog(ex.message + ex.stack, 'Error');
         } else {
           await showDialog('An unknown error occurred.', 'Error');
         }

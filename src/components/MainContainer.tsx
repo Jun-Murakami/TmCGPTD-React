@@ -43,7 +43,7 @@ export function MainContainer() {
     }
 
     // 新規チャットの場合
-    if (roomState.isNewChat && inputText.length > 0) {
+    if (roomState.isNewChat && inputText.length > 0 && apiKey) {
       try {
         const messages: Message[] = [
           { role: 'system', date: new Date(), content: '#System' + roomState.systemMessage! + '---', usage: '' },
@@ -62,13 +62,13 @@ export function MainContainer() {
         setInputText('');
       } catch (ex) {
         if (ex instanceof Error) {
-          await showDialog(ex.message, 'Error');
+          await showDialog(ex.message + ex.stack, 'Error');
         } else {
           await showDialog('An unknown error occurred.', 'Error');
         }
       }
       // 既存ルームへの送信の場合
-    } else if (!roomState.isNewChat && inputText.length > 0) {
+    } else if (!roomState.isNewChat && inputText.length > 0 && apiKey) {
       try {
         const messages: Message[] = [
           { role: 'user', date: new Date(), content: inputText + '\n\n(!--editable--)', usage: '' },
@@ -81,12 +81,12 @@ export function MainContainer() {
         setInputText('');
       } catch (ex) {
         if (ex instanceof Error) {
-          await showDialog(ex.message, 'Error');
+          await showDialog(ex.message + ex.stack, 'Error');
         } else {
           await showDialog('An unknown error occurred.', 'Error');
         }
       }
-    } else if (roomState.isNewChat && (apiKey === null || apiKey === '' || apiKey === undefined)) {
+    } else if (apiKey === null || apiKey === '' || apiKey === undefined) {
       await showDialog('Please enter api key.', 'Information');
     }
   };

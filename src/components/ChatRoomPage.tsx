@@ -15,6 +15,7 @@ import { AiIcon } from '../components/AiIcon';
 import { CodeBlock } from '../components/CodeBlock';
 import { EditPromptButton } from '../components/EditPromptButton';
 import { TextFieldMod } from '../components/TextFieldMod';
+import { EditableMessageState } from '../types/types';
 
 export function ChatRoomPage() {
   const roomState = useChatStore((state) => state.roomState);

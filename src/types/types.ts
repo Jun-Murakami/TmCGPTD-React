@@ -1,3 +1,4 @@
+// Type definitions for types.ts
 export type ChatRoom = {
   id?: number;
   date: Date;
