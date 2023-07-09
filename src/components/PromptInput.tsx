@@ -23,7 +23,7 @@ export const PromptInput = React.memo(({ onClick }: TextInputProps) => {
   };
 
   return (
-    <Box display='flex' alignItems='center' justifyContent='center' position='fixed' bottom={10} width='100vw' right={10}>
+    <Box display='flex' alignItems='center' justifyContent='center' position='fixed' bottom={10} width='100vw'>
       <Box
         bgcolor={'white'}
         sx={{
@@ -42,7 +42,7 @@ export const PromptInput = React.memo(({ onClick }: TextInputProps) => {
           InputProps={{
             endAdornment: (
               <InputAdornment position='end'>
-                <IconButton sx={{ zIndex: 9999, right: 1, bottom: 10 }} onClick={onClick} disabled={!isEditing}>
+                <IconButton sx={{ zIndex: 9999, right: 0, bottom: 10 }} onClick={onClick} disabled={!isEditing}>
                   <SendIcon />
                 </IconButton>
               </InputAdornment>

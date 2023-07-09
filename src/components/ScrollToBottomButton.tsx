@@ -1,5 +1,5 @@
 import Fab from '@mui/material/Fab';
-import SwipeDownAltRoundedIcon from '@mui/icons-material/SwipeDownAltRounded';
+import ExpandCircleDownRoundedIcon from '@mui/icons-material/ExpandCircleDownRounded';
 
 export function ScrollToBottomButton() {
   const scrollToBottom = () => {
@@ -10,7 +10,7 @@ export function ScrollToBottomButton() {
   };
 
   return (
-    <SwipeDownAltRoundedIcon
+    <ExpandCircleDownRoundedIcon
       aria-label='scroll down'
       onClick={scrollToBottom}
       sx={{ color: 'grey.500', position: 'fixed', right: '8px', bottom: '28px', zIndex: 99999 }}
