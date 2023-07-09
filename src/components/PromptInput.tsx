@@ -42,7 +42,7 @@ export const PromptInput = React.memo(({ onClick }: TextInputProps) => {
           InputProps={{
             endAdornment: (
               <InputAdornment position='end'>
-                <IconButton sx={{ zIndex: 9999, right: 2, bottom: 10 }} onClick={onClick} disabled={!isEditing}>
+                <IconButton sx={{ zIndex: 9999, right: 1, bottom: 10 }} onClick={onClick} disabled={!isEditing}>
                   <SendIcon />
                 </IconButton>
               </InputAdornment>
