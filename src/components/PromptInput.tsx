@@ -23,7 +23,7 @@ export const PromptInput = React.memo(({ onClick }: TextInputProps) => {
   };
 
   return (
-    <Box display='flex' alignItems='center' justifyContent='center' position='fixed' bottom={10} width='100vw'>
+    <Box display='flex' alignItems='center' justifyContent='center' position='fixed' bottom={10} width='100vw' right={10}>
       <Box
         bgcolor={'white'}
         sx={{
