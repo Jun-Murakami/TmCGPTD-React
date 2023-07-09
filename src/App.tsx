@@ -10,6 +10,7 @@ import { useInputDialogStore } from './store/dialogStore';
 import { ModalDialog } from './components/ModalDialog';
 import { InputDialog } from './components/InputDialog';
 import { MainContainer } from './components/MainContainer';
+import { ScrollToBottomButton } from './components/ScrollToBottomButton';
 import AES from 'crypto-js/aes';
 import Utf8 from 'crypto-js/enc-utf8';
 
@@ -20,6 +21,19 @@ function App() {
   const setApiKey = useUserStore((state) => state.setApiKey);
   const setApiModel = useAppStore((state) => state.setApiModel);
   const [language, setLanguage] = useState('en');
+  const [isBottom, setIsBottom] = useState(true);
+
+  const handleScroll = () => {
+    const bottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight;
+    setIsBottom(bottom);
+  };
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   useEffect(() => {
     const browserLanguage = navigator.language.split('-')[0];
@@ -42,6 +56,7 @@ function App() {
       <Helmet>
         <html lang={language} />
       </Helmet>
+      {!isBottom && <ScrollToBottomButton />}
       {isDialogVisible && <ModalDialog />}
       {isInputDialogVisible && <InputDialog />}
       {!session ? (

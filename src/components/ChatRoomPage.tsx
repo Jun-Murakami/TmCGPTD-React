@@ -116,6 +116,10 @@ export function ChatRoomPage() {
       }
     }
 
+    window.scrollTo({
+      top: document.body.scrollHeight,
+    });
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentMessages.length]);
 
@@ -136,7 +140,7 @@ export function ChatRoomPage() {
               handleSystemEdit={handleSystemEdit}
               handleSystemSaved={handleSystemSaved}
               handleSystemCancel={handleSystemCancel}
-              setText={(newText) => setRoomState((prevState) => ({ ...prevState, SystemMessage }))}
+              setText={() => setRoomState((prevState) => ({ ...prevState, SystemMessage }))}
             />
           ) : message.role === 'user' && message.id === roomState.lastUserMessageId ? (
             <LastUserMessage
@@ -146,7 +150,7 @@ export function ChatRoomPage() {
               handleUserEdit={handleUserEdit}
               handleUserSaved={handleUserSaved}
               handleUserCancel={handleUserCancel}
-              setText={(newText) => setRoomState((prevState) => ({ ...prevState, LastUserMessage }))}
+              setText={() => setRoomState((prevState) => ({ ...prevState, LastUserMessage }))}
             />
           ) : message.role === 'user' && message.id !== roomState.lastUserMessageId ? (
             <UserMessage message={message} userAvatar={userAvatar} />
@@ -155,7 +159,7 @@ export function ChatRoomPage() {
           ) : message.role === 'assistant' && message.id === roomState.lastAssistantMessageId ? (
             <LastAssistantMessage message={message} />
           ) : (
-            ''
+            '' //Do nothing. 最後でないシステムメッセージはここに来る
           )}
         </div>
       ))}

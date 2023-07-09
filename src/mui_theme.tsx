@@ -47,6 +47,12 @@ export const theme = createTheme({
           margin-block-end: 0;
           padding-inline-start: 1em;
         },
+        .markdownBody h1,
+        .markdownBody h2,
+        .markdownBody h3,
+        .markdownBody h4 {
+          font-size: 1em;
+        },
         .border-all {
           margin : 15px 0 15px 0;
           border-radius: 10px;
