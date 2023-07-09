@@ -13,7 +13,7 @@ export function ScrollToBottomButton() {
     <SwipeDownAltRoundedIcon
       aria-label='scroll down'
       onClick={scrollToBottom}
-      sx={{ color: 'grey.500', position: 'fixed', right: '4px', bottom: '50px', textShadow: 3 }}
+      sx={{ color: 'grey.500', position: 'fixed', right: '4px', bottom: '28px', zIndex: 99999 }}
     />
   );
 }
