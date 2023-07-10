@@ -1,4 +1,3 @@
-import Fab from '@mui/material/Fab';
 import ExpandCircleDownRoundedIcon from '@mui/icons-material/ExpandCircleDownRounded';
 
 export function ScrollToBottomButton() {

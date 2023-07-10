@@ -264,8 +264,7 @@ export function useProcessSendMessage() {
           }
           const roomName: string = await getRoomNameAsync(forNamingString, apiKey!, model!);
           await updateChatRoomNameDb(roomState.currentRoomId!, roomName);
-          const rooms = await getChatRoomsDb();
-          setRoomState((prev) => ({ ...prev, currentRoomName: roomName, chatRooms: rooms }));
+          setRoomState((prev) => ({ ...prev, currentRoomName: roomName }));
         }
         await updateAssistantMessageDb(
           roomState.currentRoomId!,
@@ -275,6 +274,15 @@ export function useProcessSendMessage() {
           roomState.jsonPrev!,
           roomState.userInput
         );
+
+        const rooms = await getChatRoomsDb();
+        setRoomState((prevState) => ({
+          ...prevState,
+          isNewInputAdded: false,
+          chatRooms: rooms,
+          userInput: '',
+          isAssistantMessageRecievedDone: false,
+        }));
       } catch (ex) {
         if (ex instanceof Error) {
           await showDialog(ex.message + ex.stack, 'Error');
@@ -284,13 +292,6 @@ export function useProcessSendMessage() {
       }
     };
     setAssistantMessage();
-
-    setRoomState((prevState) => ({
-      ...prevState,
-      isNewInputAdded: false,
-      userInput: '',
-      isAssistantMessageRecievedDone: false,
-    }));
 
     console.log(roomState);
     // eslint-disable-next-line react-hooks/exhaustive-deps

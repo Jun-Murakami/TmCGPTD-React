@@ -17,6 +17,10 @@ export function NewChatPage() {
   useEffect(() => {
     setRoomState((prev) => ({
       ...prev,
+      currentRoomId: undefined,
+      currentRoomName: undefined,
+      json: [],
+      jsonPrev: [],
       systemMessage: `あなたはOpenAIによってトレーニングされた大規模言語モデルのChatGPTです。\nユーザーの指示をStep by Stepで注意深く思考し、Markdownで回答して下さい。`,
     }));
     setCurrentMessages([]);

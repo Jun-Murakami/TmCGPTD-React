@@ -201,7 +201,15 @@ export async function updateChatRoomNameDb(roomId: number, roomName: string) {
   const { error } = await supabase.from('chatrooms').update({ title: roomName }).eq('id', roomId);
 
   if (error) {
-    new Error('Failed to update assistant message. ' + error.message);
+    return error;
+  }
+}
+
+export async function deleteChatRoomDb(roomId: number) {
+  const { error } = await supabase.from('chatrooms').delete().eq('id', roomId);
+
+  if (error) {
+    return error;
   }
 }
 

@@ -4,6 +4,7 @@ import { useChatStore } from '../store/chatStore';
 import { useUserStore } from '../store/userStore';
 import { supabase } from '../hooks/useSupabaseSession';
 import { useDialogStore, useInputDialogStore } from '../store/dialogStore';
+import { updateChatRoomNameDb, getChatRoomsDb, deleteChatRoomDb } from '../services/supabaseDb';
 import { styled } from '@mui/material/styles';
 import {
   Box,
@@ -60,9 +61,35 @@ export function SwipeableRoomsDrawer() {
     setRoomState((prev) => ({ ...prev, currentRoomName: roomName, currentRoomId: roomId }));
   };
 
+  const handleRoomNameEdit = async () => {
+    let result = await showInputDialog('', 'Please enter a new title.', 'Chat title', roomState.currentRoomName!);
+    if (result === null || result === '' || result === undefined || result === roomState.currentRoomName!) return;
+    const error = await updateChatRoomNameDb(roomState.currentRoomId!, result);
+    if (error) {
+      await showDialog('Chat title update failed: ' + error, 'Error');
+    } else {
+      const newRooms = await getChatRoomsDb();
+      setRoomState((prev) => ({ ...prev, chatRooms: newRooms, currentRoomName: result }));
+    }
+  };
+
+  const handleDeleteRoom = async () => {
+    const error = await deleteChatRoomDb(roomState.currentRoomId!);
+    if (error) {
+      await showDialog('Failed to delete chat: ' + error, 'Error');
+    } else {
+      const newRooms = await getChatRoomsDb();
+      setRoomState((prev) => ({
+        ...prev,
+        chatRooms: newRooms,
+        isNewChat: true,
+      }));
+    }
+  };
+
   const handleChangeEmail = async () => {
     let result = await showInputDialog('', 'Enter your new email address.', 'Email address', email);
-    if (result === null || result === '' || result === undefined) return;
+    if (result === null || result === '' || result === undefined || result === email) return;
     const { error } = await supabase.auth.updateUser({ email: result });
     if (error) {
       await showDialog('Email address update failed: ' + error, 'Error');
@@ -277,6 +304,8 @@ export function SwipeableRoomsDrawer() {
             key={room.id}
             currentRoomId={roomState.currentRoomId!}
             room={room}
+            handleRoomNameEdit={handleRoomNameEdit}
+            handleDeleteRoom={handleDeleteRoom}
             handleChatRoomClick={handleChatRoomClick}
           />
         ))}
