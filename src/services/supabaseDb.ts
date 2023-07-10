@@ -253,7 +253,10 @@ export async function updateAssistantMessageDb(
 }
 
 export async function updateChatRoomNameDb(roomId: number, roomName: string) {
-  const { error } = await supabase.from('chatrooms').update({ title: roomName }).eq('id', roomId);
+  const { error } = await supabase
+    .from('chatrooms')
+    .update({ title: roomName, updated_on: dateTimeRounder(new Date()) })
+    .eq('id', roomId);
 
   if (error) {
     return error;

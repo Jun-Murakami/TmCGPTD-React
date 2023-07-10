@@ -117,9 +117,10 @@ export function ListItemGradient({
                 right: 0,
                 width: '5em',
                 height: '100%',
-                backgroundImage: isHovered
-                  ? 'linear-gradient(to right, rgba(245,245,245,0), rgba(245,245,245,1) 100%)'
-                  : 'linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,1) 100%)',
+                backgroundImage:
+                  isHovered || room.id === currentRoomId
+                    ? 'linear-gradient(to right, rgba(245,245,245,0), rgba(245,245,245,1) 100%)'
+                    : 'linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,1) 100%)',
                 pointerEvents: 'none',
               },
             },
