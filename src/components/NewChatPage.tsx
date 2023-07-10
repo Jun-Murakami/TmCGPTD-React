@@ -18,7 +18,7 @@ export function NewChatPage() {
     setRoomState((prev) => ({
       ...prev,
       currentRoomId: undefined,
-      currentRoomName: undefined,
+      currentRoomName: '',
       json: [],
       jsonPrev: [],
       systemMessage: `あなたはOpenAIによってトレーニングされた大規模言語モデルのChatGPTです。\nユーザーの指示をStep by Stepで注意深く思考し、Markdownで回答して下さい。`,
