@@ -29,7 +29,7 @@ export function ListItemGradient({
   const [isDeleting, setIsDeleting] = useState(false);
 
   return (
-    <ListItem key={room.id} disablePadding>
+    <ListItem key={room.id} disablePadding sx={room.id === currentRoomId ? { background: 'rgba(245, 245, 245, 1)' } : {}}>
       <ListItemButton
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}

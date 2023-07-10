@@ -156,7 +156,62 @@ export async function removeEditableMarkDb(lastUserMessageId: number) {
   }
 }
 
-export async function updateMessageDb(roomId: number, message: Message) {
+export async function updateUserMessageDb(roomId: number, message: Message, jsonPrev: Chat[]) {
+  const { error } = await supabase
+    .from('messages')
+    .update({
+      created_on: dateTimeRounder(message.date),
+      content: message.content + '\n\n(!--editable--)',
+      usage: message.usage,
+    })
+    .eq('id', message.id);
+
+  if (error) {
+    new Error('Failed to update user message. ' + error.message);
+  } else {
+    const { error } = await supabase
+      .from('chatrooms')
+      .update({
+        updated_on: dateTimeRounder(message.date),
+        json: JSON.stringify(jsonPrev),
+        json_prev: JSON.stringify(jsonPrev),
+        last_prompt: message.content.replace('(!--editable--)', '').replace(/^[\r\n\s]+|[\r\n\s]+$/g, ''),
+      })
+      .eq('id', roomId);
+
+    if (error) {
+      new Error('Failed to update user message. ' + error.message);
+    }
+  }
+  console.log('updateMessageDb');
+}
+
+export async function updateSystemMessageDb(roomId: number, message: Message, json: Chat[], jsonPrev: Chat[]) {
+  const { error } = await supabase
+    .from('messages')
+    .update({
+      created_on: dateTimeRounder(message.date),
+      content: '#System' + message.content + '---',
+      usage: message.usage,
+    })
+    .eq('id', message.id);
+
+  if (error) {
+    new Error('Failed to update system message. ' + error.message);
+  } else {
+    const { error } = await supabase
+      .from('chatrooms')
+      .update({
+        updated_on: dateTimeRounder(message.date),
+        json: JSON.stringify(jsonPrev),
+        json_prev: JSON.stringify(jsonPrev),
+      })
+      .eq('id', roomId);
+
+    if (error) {
+      new Error('Failed to update system message. ' + error.message);
+    }
+  }
   console.log('updateMessageDb');
 }
 

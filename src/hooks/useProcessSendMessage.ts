@@ -54,11 +54,13 @@ export function useProcessSendMessage() {
 
       // そもそもユーザー入力が4096を超えている場合はエラー
       if (inputTokenCount > 4096) {
-        new Error(
+        showDialog(
           `The values for input text (${inputTokenCount}) exceeds 4097 tokens. Please reduce by at least ${
             inputTokenCount - 4096
-          } tokens.`
+          } tokens.`,
+          'Error'
         );
+        return;
       }
 
       // 過去の履歴＋ユーザーの新規入力がmaxContentLengthを超えた場合の要約処理
@@ -126,8 +128,7 @@ export function useProcessSendMessage() {
             processedMessages!.unshift({ role: 'assistant', content: summary });
           } catch (ex) {
             if (ex instanceof Error) {
-              //await showDialog(ex.message, 'Error');
-              throw ex;
+              await showDialog(ex.message, 'Error');
             } else {
               await showDialog('An unknown error occurred.', 'Error');
             }
