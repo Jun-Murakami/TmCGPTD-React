@@ -1,8 +1,9 @@
+import React from 'react';
 import { CodeComponent } from 'react-markdown/lib/ast-to-react';
 import Highlight from 'react-highlight';
 import { Box } from '@mui/material';
 
-export const CodeBlock: CodeComponent = ({ inline, className, children }) => {
+export const CodeBlock: CodeComponent = React.memo(({ inline, className, children }) => {
   if (inline) {
     return <code className={className}>{children}</code>;
   }
@@ -29,4 +30,4 @@ export const CodeBlock: CodeComponent = ({ inline, className, children }) => {
       <Highlight className={`${lang} ${borderRadiusClass}`}>{String(children).replace(/\n$/, '')}</Highlight>
     </>
   );
-};
+});

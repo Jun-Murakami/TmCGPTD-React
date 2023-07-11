@@ -263,11 +263,20 @@ export async function updateChatRoomNameDb(roomId: number, roomName: string) {
   }
 }
 
-export async function deleteChatRoomDb(roomId: number) {
-  const { error } = await supabase.from('chatrooms').delete().eq('id', roomId);
-
+export async function deleteChatRoomDb(uuid: string, roomId: number) {
+  const { error } = await supabase.from('management').insert({
+    user_id: uuid,
+    delete_table: 'chatlog',
+    delete_id: roomId,
+    date: dateTimeRounder(new Date()),
+  });
   if (error) {
     return error;
+  } else {
+    const { error } = await supabase.from('chatrooms').delete().eq('id', roomId);
+    if (error) {
+      return error;
+    }
   }
 }
 

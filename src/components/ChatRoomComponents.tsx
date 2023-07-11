@@ -18,38 +18,33 @@ type SystemMessageProps = {
   setText: (newText: string) => void;
 };
 
-export function SystemMessage({
-  message,
-  systemMessageState,
-  handleSystemEdit,
-  handleSystemSaved,
-  handleSystemCancel,
-  setText,
-}: SystemMessageProps) {
-  return (
-    <Box sx={{ p: 1.5, alignItems: 'left' }}>
-      <Stack spacing={2}>
-        <PsychologyIcon sx={{ fontSize: 30, marginTop: 0 }} color='primary' />
-        <EditPromptButton
-          isEditing={systemMessageState.isTextEditing}
-          onEdit={handleSystemEdit}
-          onSave={handleSystemSaved}
-          onCancel={handleSystemCancel}
-          marginTop={0}
-        />
-      </Stack>
-      <Box sx={{ pl: 5, width: '100%' }} marginTop={-3.4}>
-        <TextFieldMod
-          isSaved={systemMessageState.isTextSaved}
-          isEditing={systemMessageState.isTextEditing}
-          text={message.content}
-          id={message.id}
-          setText={setText}
-        />
+export const SystemMessage = React.memo(
+  ({ message, systemMessageState, handleSystemEdit, handleSystemSaved, handleSystemCancel, setText }: SystemMessageProps) => {
+    return (
+      <Box sx={{ p: 1.5, alignItems: 'left' }}>
+        <Stack spacing={2}>
+          <PsychologyIcon sx={{ fontSize: 30, marginTop: 0 }} color='primary' />
+          <EditPromptButton
+            isEditing={systemMessageState.isTextEditing}
+            onEdit={handleSystemEdit}
+            onSave={handleSystemSaved}
+            onCancel={handleSystemCancel}
+            marginTop={0}
+          />
+        </Stack>
+        <Box sx={{ pl: 5, width: '100%' }} marginTop={-3.4}>
+          <TextFieldMod
+            isSaved={systemMessageState.isTextSaved}
+            isEditing={systemMessageState.isTextEditing}
+            text={message.content}
+            id={message.id}
+            setText={setText}
+          />
+        </Box>
       </Box>
-    </Box>
-  );
-}
+    );
+  }
+);
 
 type LastUserMessageProps = {
   message: Message;
@@ -61,46 +56,48 @@ type LastUserMessageProps = {
   setText: (newText: string) => void;
 };
 
-export function LastUserMessage({
-  message,
-  userAvatar,
-  userMessageState,
-  handleUserEdit,
-  handleUserSaved,
-  handleUserCancel,
-  setText,
-}: LastUserMessageProps) {
-  return (
-    <Card sx={{ p: 1.5, display: 'block' }}>
-      <Avatar alt='Avatar' src={userAvatar!} sx={{ width: 30, height: 30 }} />
-      <EditPromptButton
-        isEditing={userMessageState.isTextEditing}
-        onEdit={handleUserEdit}
-        onSave={handleUserSaved}
-        onCancel={handleUserCancel}
-        marginTop={-1}
-      />
-      <Stack sx={{ pl: 5 }} marginTop={-6.1} width={'100%'}>
-        <Box marginTop={2.7} sx={{ width: '100%' }}>
-          <TextFieldMod
-            isSaved={userMessageState.isTextSaved}
-            isEditing={userMessageState.isTextEditing}
-            text={message.content}
-            id={message.id!}
-            setText={setText}
-          />
-        </Box>
-        <Stack marginBottom={1.5} sx={{ color: 'grey.500' }} width={'100%'}>
-          <Typography variant='caption' textAlign='right'>
-            {message.date.getFullYear() > 1
-              ? `[${message.date.toLocaleDateString() + ' ' + message.date.toLocaleTimeString()}]`
-              : `[Web Chat]`}
-          </Typography>
+export const LastUserMessage = React.memo(
+  ({
+    message,
+    userAvatar,
+    userMessageState,
+    handleUserEdit,
+    handleUserSaved,
+    handleUserCancel,
+    setText,
+  }: LastUserMessageProps) => {
+    return (
+      <Card sx={{ p: 1.5, display: 'block' }}>
+        <Avatar alt='Avatar' src={userAvatar!} sx={{ width: 30, height: 30 }} />
+        <EditPromptButton
+          isEditing={userMessageState.isTextEditing}
+          onEdit={handleUserEdit}
+          onSave={handleUserSaved}
+          onCancel={handleUserCancel}
+          marginTop={-1}
+        />
+        <Stack sx={{ pl: 5 }} marginTop={-6.1} width={'100%'}>
+          <Box marginTop={2.7} sx={{ width: '100%' }}>
+            <TextFieldMod
+              isSaved={userMessageState.isTextSaved}
+              isEditing={userMessageState.isTextEditing}
+              text={message.content}
+              id={message.id!}
+              setText={setText}
+            />
+          </Box>
+          <Stack marginBottom={1.5} sx={{ color: 'grey.500' }} width={'100%'}>
+            <Typography variant='caption' textAlign='right'>
+              {message.date.getFullYear() > 1
+                ? `[${message.date.toLocaleDateString() + ' ' + message.date.toLocaleTimeString()}]`
+                : `[Web Chat]`}
+            </Typography>
+          </Stack>
         </Stack>
-      </Stack>
-    </Card>
-  );
-}
+      </Card>
+    );
+  }
+);
 
 type UserMessageProps = {
   message: Message;

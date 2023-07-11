@@ -8,7 +8,7 @@ interface TextInputProps {
   onClick: () => void;
 }
 
-export const PromptInput = React.memo(({ onClick }: TextInputProps) => {
+export function PromptInput({ onClick }: TextInputProps) {
   const [isEditing, setIsEditing] = useState(false);
   const inputText = useAppStore((state) => state.inputText);
   const setInputText = useAppStore((state) => state.setInputText);
@@ -60,4 +60,4 @@ export const PromptInput = React.memo(({ onClick }: TextInputProps) => {
       </Box>
     </Box>
   );
-});
+}

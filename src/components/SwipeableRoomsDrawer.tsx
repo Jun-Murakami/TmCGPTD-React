@@ -43,6 +43,7 @@ export function SwipeableRoomsDrawer() {
   const setApiKey = useUserStore((state) => state.setApiKey);
   const email = useUserStore((state) => state.email);
   const setUserInfo = useUserStore((state) => state.setUserInfo);
+  const uuid = useUserStore((state) => state.uuid);
   const roomState = useChatStore((state) => state.roomState);
   const setRoomState = useChatStore((state) => state.setRoomState);
   const setDrawerIsOpen = useAppStore((state) => state.setDrawerIsOpen);
@@ -74,7 +75,7 @@ export function SwipeableRoomsDrawer() {
   };
 
   const handleDeleteRoom = async () => {
-    const error = await deleteChatRoomDb(roomState.currentRoomId!);
+    const error = await deleteChatRoomDb(uuid!, roomState.currentRoomId!);
     if (error) {
       await showDialog('Failed to delete chat: ' + error, 'Error');
     } else {
