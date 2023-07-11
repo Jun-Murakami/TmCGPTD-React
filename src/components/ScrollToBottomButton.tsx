@@ -12,7 +12,7 @@ export function ScrollToBottomButton() {
     <ExpandCircleDownRoundedIcon
       aria-label='scroll down'
       onClick={scrollToBottom}
-      sx={{ color: 'grey.500', position: 'fixed', right: '8px', bottom: '28px', zIndex: 99999 }}
+      sx={{ color: 'grey.500', position: 'fixed', right: '8px', bottom: '28px', zIndex: 1000 }}
     />
   );
 }

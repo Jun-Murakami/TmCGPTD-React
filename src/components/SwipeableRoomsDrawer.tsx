@@ -114,7 +114,7 @@ export function SwipeableRoomsDrawer() {
 
   const handleDeleteAccount = async () => {
     let result = await showDialog(
-      'Are you sure you want to delete your account? *All chat logs and templates stored in your account will be deleted.',
+      'Are you sure you want to delete your account?\n*All chat logs and templates stored in your account will be deleted.',
       'Confimation',
       true
     );
