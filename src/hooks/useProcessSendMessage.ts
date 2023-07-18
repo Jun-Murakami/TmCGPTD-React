@@ -26,7 +26,7 @@ export function useProcessSendMessage() {
     let isSummarized: boolean = false; // 要約フラグをリセット
     let isDeleteHistory: boolean = false; // 履歴削除フラグをリセット
     let processedMessages: Chat[] = []; // 処理済みのメッセージを格納する配列
-    let updatedMessage: Message | null = null; // 更新されたメッセージを保持する変数
+    let updatedMessageText: string | null = null; // 更新されたメッセージを保持する変数
 
     const getAssistantMessage = async () => {
       // jsonがある場合はjsonを取得
@@ -183,26 +183,11 @@ export function useProcessSendMessage() {
               const newMessages = currentMessages.map((message: Message) => {
                 if (message.id === roomState.lastAssistantMessageId) {
                   const newAssistantText = message.content + content;
-                  const comletionTokens: number = encode(newAssistantText).length;
                   const newMessage = {
                     ...message,
                     content: newAssistantText,
-                    usage:
-                      '[tokens] prompt:' +
-                      promptTokens +
-                      ', completion:' +
-                      comletionTokens +
-                      ', total:' +
-                      (promptTokens + comletionTokens) +
-                      (isSummarized
-                        ? `\n-Conversation history has been summarized. before: ${preSummarizedHistoryTokenCount}`
-                        : ``) +
-                      (isDeleteHistory
-                        ? `\n-Conversation history has been deleted. before: ${preSummarizedHistoryTokenCount}`
-                        : ``),
-                    date: new Date(),
                   };
-                  updatedMessage = newMessage; // 更新されたメッセージを保持
+                  updatedMessageText = newAssistantText; // 更新されたメッセージを保持
                   return newMessage;
                 } else {
                   return message;
@@ -213,15 +198,41 @@ export function useProcessSendMessage() {
           } else if ('role' in delta) {
             //do nothing
           } else if (response.message.choices[0].finish_reason === 'stop') {
-            if (updatedMessage) {
+            if (updatedMessageText) {
               const postedConversation: Chat[] = [
                 ...processedMessages,
                 { role: 'user', content: roomState.userInput! },
-                { role: 'assistant', content: updatedMessage.content },
+                { role: 'assistant', content: updatedMessageText },
               ];
+              const comletionTokens: number = encode(updatedMessageText).length;
+              const newMessage: Message = {
+                id: roomState.lastAssistantMessageId!,
+                role: 'assistant',
+                content: updatedMessageText,
+                usage:
+                  '[tokens] prompt:' +
+                  promptTokens +
+                  ', completion:' +
+                  comletionTokens +
+                  ', total:' +
+                  (promptTokens + comletionTokens) +
+                  (isSummarized ? `\n-Conversation has been summarized. before: ${preSummarizedHistoryTokenCount}` : ``) +
+                  (isDeleteHistory ? `\n-Conversation history has been deleted. before: ${preSummarizedHistoryTokenCount}` : ``),
+                date: new Date(),
+              };
+              setCurrentMessages((currentMessages) => {
+                const newMessages = currentMessages.map((message: Message) => {
+                  if (message.id === roomState.lastAssistantMessageId) {
+                    return newMessage;
+                  } else {
+                    return message;
+                  }
+                });
+                return newMessages;
+              });
               setRoomState((prev) => ({
                 ...prev,
-                lastAssistantMessage: updatedMessage!,
+                lastAssistantMessage: newMessage!,
                 isAssistantMessageRecievedDone: true,
                 json: postedConversation,
                 jsonPrev: processedMessages,

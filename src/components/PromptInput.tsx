@@ -1,25 +1,27 @@
-import React from 'react';
-import { useState } from 'react';
-import { useAppStore } from '../store/appStore';
+import { useState, useEffect } from 'react';
 import { Box, IconButton, InputAdornment, TextField } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 
 interface TextInputProps {
-  onClick: () => void;
+  onSubmit: (inputValue: string) => void;
 }
 
-export function PromptInput({ onClick }: TextInputProps) {
+export function PromptInput({ onSubmit }: TextInputProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const inputText = useAppStore((state) => state.inputText);
-  const setInputText = useAppStore((state) => state.setInputText);
+  const [inputValue, setInputValue] = useState('');
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setInputText(event.target.value);
-    if (event.target.value.length > 0 && !isEditing) {
+  useEffect(() => {
+    if (inputValue.length > 0 && !isEditing) {
       setIsEditing(true);
-    } else if (event.target.value.length === 0 && isEditing) {
+    } else if (inputValue.length === 0 && isEditing) {
       setIsEditing(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inputValue]);
+
+  const handleButtonClick = () => {
+    onSubmit(inputValue);
+    setInputValue(''); // Clear the input field
   };
 
   return (
@@ -32,8 +34,8 @@ export function PromptInput({ onClick }: TextInputProps) {
         }}
       >
         <TextField
-          value={inputText}
-          onChange={handleChange}
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
           multiline
           id='outlined-multiline-flexible'
           label='Send a message'
@@ -42,7 +44,7 @@ export function PromptInput({ onClick }: TextInputProps) {
           InputProps={{
             endAdornment: (
               <InputAdornment position='end'>
-                <IconButton sx={{ zIndex: 1200, right: 0, bottom: 10 }} onClick={onClick} disabled={!isEditing}>
+                <IconButton sx={{ zIndex: 1200, right: 0, bottom: 10 }} onClick={handleButtonClick} disabled={!isEditing}>
                   <SendIcon />
                 </IconButton>
               </InputAdornment>

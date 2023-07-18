@@ -22,7 +22,6 @@ export function MainContainer() {
   const roomState = useChatStore((state) => state.roomState);
   const setRoomState = useChatStore((state) => state.setRoomState);
   const setCurrentMessages = useChatStore((state) => state.setCurrentMessages);
-  const inputText = useAppStore((state) => state.inputText);
   const setInputText = useAppStore((state) => state.setInputText);
   const apiKey = useUserStore((state) => state.apiKey);
   const uuid = useUserStore((state) => state.uuid);
@@ -36,7 +35,7 @@ export function MainContainer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handlePostButtonClick = async () => {
+  const handlePostButtonClick = async (inputText: string) => {
     if (!uuid) {
       await showDialog('An unknown error occurred.', 'Error');
       return;
@@ -97,7 +96,7 @@ export function MainContainer() {
       <Box sx={{ width: '100%', paddingTop: 8 }} display='flex' alignItems='center' justifyContent='center'>
         {roomState.isNewChat ? <NewChatPage /> : <ChatRoomPage />}
       </Box>
-      <PromptInput onClick={handlePostButtonClick} />
+      <PromptInput onSubmit={handlePostButtonClick} />
     </>
   );
 }
