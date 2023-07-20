@@ -21,7 +21,7 @@ export function NewChatPage() {
       currentRoomName: '',
       json: [],
       jsonPrev: [],
-      systemMessage: `あなたはOpenAIによってトレーニングされた大規模言語モデルのChatGPTです。\nユーザーの指示をStep by Stepで注意深く思考し、Markdownで回答して下さい。`,
+      systemMessage: `You are ChatGPT, a large scale language model trained by OpenAI.\nThink carefully Step by Step through the user's instructions and answer in Markdown.`,
     }));
     setCurrentMessages([]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
