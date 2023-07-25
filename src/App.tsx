@@ -62,7 +62,7 @@ function App() {
       {!session ? (
         <Auth
           supabaseClient={supabase}
-          providers={['google', 'azure']}
+          providers={['google', 'azure', 'github']}
           appearance={{
             theme: ThemeSupa,
             style: {
